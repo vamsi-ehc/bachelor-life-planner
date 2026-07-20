@@ -1,35 +1,38 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { useAuth } from './auth/useAuth';
+import { Login } from './auth/Login';
+import { Dashboard } from './dashboard/Dashboard';
+import { WorkoutScreen } from './domains/workout/WorkoutScreen';
+import { LearningScreen } from './domains/learning/LearningScreen';
+import { ChoresScreen } from './domains/chores/ChoresScreen';
 
-function App() {
-  const [count, setCount] = useState(0)
-
+function AuthedRoutes({ uid }: { uid: string }) {
+  const navigate = useNavigate();
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <Routes>
+      <Route path="/" element={<Dashboard uid={uid} onNavigate={navigate} />} />
+      <Route path="/workout" element={<WorkoutScreen uid={uid} />} />
+      <Route path="/learning" element={<LearningScreen uid={uid} />} />
+      <Route path="/chores" element={<ChoresScreen uid={uid} />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
 }
 
-export default App
+export default function App() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <p className="p-6">Loading...</p>;
+  }
+
+  if (!user) {
+    return <Login />;
+  }
+
+  return (
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <AuthedRoutes uid={user.uid} />
+    </BrowserRouter>
+  );
+}
