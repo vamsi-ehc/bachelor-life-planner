@@ -56,4 +56,15 @@ describe('WorkoutScreen', () => {
       expect.objectContaining({ exercise: 'Squats', detail: '3x10' })
     );
   });
+
+  it('shows an error message instead of hanging when loading fails', async () => {
+    mockGetCompletion.mockRejectedValue(new Error('offline'));
+    mockListEntries.mockResolvedValue([]);
+
+    render(<WorkoutScreen uid="user1" />);
+
+    await waitFor(() =>
+      expect(screen.getByText('Something went wrong: offline')).toBeInTheDocument()
+    );
+  });
 });

@@ -66,4 +66,17 @@ describe('useDashboardData', () => {
     expect(result.current.dueItems).toEqual([{ id: 'c2', label: 'Laundry', domain: 'chores' }]);
     expect(result.current.dayHealth).toBe(75);
   });
+
+  it('sets an error and clears loading when a read fails', async () => {
+    mockGetCompletion.mockRejectedValue(new Error('permission denied'));
+    mockListRecentCompletions.mockResolvedValue([]);
+    mockListChores.mockResolvedValue([]);
+
+    const { result } = renderHook(() => useDashboardData('user1'));
+    expect(result.current.loading).toBe(true);
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.error).toBe('permission denied');
+  });
 });

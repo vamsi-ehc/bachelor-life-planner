@@ -8,10 +8,14 @@ export function ChoresScreen({ uid }: { uid: string }) {
   const [chores, setChores] = useState<ChoreConfig[]>([]);
   const [completion, setCompletion] = useState<DailyCompletion | null>(null);
   const [newChoreName, setNewChoreName] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    listChores(uid).then(setChores);
-    getCompletion(uid).then(setCompletion);
+    const handleError = (err: unknown) => {
+      setError(err instanceof Error ? err.message : 'Failed to load data');
+    };
+    listChores(uid).then(setChores).catch(handleError);
+    getCompletion(uid).then(setCompletion).catch(handleError);
   }, [uid]);
 
   async function handleToggle(choreId: string, done: boolean) {
@@ -35,6 +39,10 @@ export function ChoresScreen({ uid }: { uid: string }) {
   }
 
   const dow = dayOfWeek(todayId());
+
+  if (error) {
+    return <p className="p-6">Something went wrong: {error}</p>;
+  }
 
   return (
     <div className="p-6 flex flex-col gap-4">

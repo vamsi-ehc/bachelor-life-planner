@@ -9,10 +9,14 @@ export function LearningScreen({ uid }: { uid: string }) {
   const [completion, setCompletion] = useState<DailyCompletion | null>(null);
   const [entries, setEntries] = useState<LearningLogEntry[]>([]);
   const [note, setNote] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getCompletion(uid).then(setCompletion);
-    listLearningLogEntries(uid).then(setEntries);
+    const handleError = (err: unknown) => {
+      setError(err instanceof Error ? err.message : 'Failed to load data');
+    };
+    getCompletion(uid).then(setCompletion).catch(handleError);
+    listLearningLogEntries(uid).then(setEntries).catch(handleError);
   }, [uid]);
 
   async function handlePunchIn() {
@@ -28,6 +32,10 @@ export function LearningScreen({ uid }: { uid: string }) {
     const id = await addLearningLogEntry(uid, entry);
     setEntries((prev) => [{ id, ...entry }, ...prev]);
     setNote('');
+  }
+
+  if (error) {
+    return <p className="p-6">Something went wrong: {error}</p>;
   }
 
   return (

@@ -10,10 +10,14 @@ export function WorkoutScreen({ uid }: { uid: string }) {
   const [entries, setEntries] = useState<WorkoutLogEntry[]>([]);
   const [exercise, setExercise] = useState('');
   const [detail, setDetail] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getCompletion(uid).then(setCompletion);
-    listWorkoutLogEntries(uid).then(setEntries);
+    const handleError = (err: unknown) => {
+      setError(err instanceof Error ? err.message : 'Failed to load data');
+    };
+    getCompletion(uid).then(setCompletion).catch(handleError);
+    listWorkoutLogEntries(uid).then(setEntries).catch(handleError);
   }, [uid]);
 
   async function handlePunchIn() {
@@ -30,6 +34,10 @@ export function WorkoutScreen({ uid }: { uid: string }) {
     setEntries((prev) => [{ id, ...entry }, ...prev]);
     setExercise('');
     setDetail('');
+  }
+
+  if (error) {
+    return <p className="p-6">Something went wrong: {error}</p>;
   }
 
   return (

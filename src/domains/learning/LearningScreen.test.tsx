@@ -52,4 +52,15 @@ describe('LearningScreen', () => {
 
     expect(mockAddEntry).toHaveBeenCalledWith('user1', expect.objectContaining({ note: 'Read chapter 3' }));
   });
+
+  it('shows an error message instead of hanging when loading fails', async () => {
+    mockGetCompletion.mockRejectedValue(new Error('offline'));
+    mockListEntries.mockResolvedValue([]);
+
+    render(<LearningScreen uid="user1" />);
+
+    await waitFor(() =>
+      expect(screen.getByText('Something went wrong: offline')).toBeInTheDocument()
+    );
+  });
 });

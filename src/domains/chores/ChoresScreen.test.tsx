@@ -61,4 +61,15 @@ describe('ChoresScreen', () => {
       expect.objectContaining({ name: 'Vacuum', cadence: 'daily' })
     );
   });
+
+  it('shows an error message instead of hanging when loading fails', async () => {
+    mockListChores.mockRejectedValue(new Error('offline'));
+    mockGetCompletion.mockResolvedValue({ date: '2026-07-20', workout: false, learning: false, chores: {} });
+
+    render(<ChoresScreen uid="user1" />);
+
+    await waitFor(() =>
+      expect(screen.getByText('Something went wrong: offline')).toBeInTheDocument()
+    );
+  });
 });
