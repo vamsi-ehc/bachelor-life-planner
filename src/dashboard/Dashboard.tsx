@@ -3,13 +3,19 @@ import { StatusChip } from '../components/StatusChip';
 import { DueNowStrip } from './DueNowStrip';
 
 export function Dashboard({ uid, onNavigate }: { uid: string; onNavigate: (path: string) => void }) {
-  const { loading, completion, chores, dueItems, streak, dayHealth } = useDashboardData(uid);
+  const { loading, error, completion, chores, dueItems, dueTodayChoreIds, streak, dayHealth } =
+    useDashboardData(uid);
+
+  if (error) {
+    return <p className="p-6">Something went wrong: {error}</p>;
+  }
 
   if (loading || !completion) {
     return <p className="p-6">Loading...</p>;
   }
 
-  const choresDoneCount = chores.filter((c) => completion.chores[c.id]).length;
+  const dueTodayChores = chores.filter((c) => dueTodayChoreIds.includes(c.id));
+  const choresDoneCount = dueTodayChores.filter((c) => completion.chores[c.id]).length;
 
   return (
     <div className="p-6 flex flex-col gap-6">
@@ -33,13 +39,13 @@ export function Dashboard({ uid, onNavigate }: { uid: string; onNavigate: (path:
         <StatusChip
           label="Chores"
           status={
-            chores.length === 0
+            dueTodayChores.length === 0
               ? 'not-started'
-              : choresDoneCount === chores.length
+              : choresDoneCount === dueTodayChores.length
                 ? 'done'
                 : 'in-progress'
           }
-          detail={`${choresDoneCount}/${chores.length}`}
+          detail={`${choresDoneCount}/${dueTodayChores.length}`}
           onClick={() => onNavigate('/chores')}
         />
       </div>
