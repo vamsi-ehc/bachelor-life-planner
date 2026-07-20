@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 const mockSignIn = vi.fn().mockResolvedValue(undefined);
@@ -24,7 +24,7 @@ describe('Login', () => {
     await user.type(screen.getByPlaceholderText('Email'), 'me@example.com');
     await user.type(screen.getByPlaceholderText('Password'), 'hunter2');
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
-    expect(mockSignIn).toHaveBeenCalledWith('me@example.com', 'hunter2');
+    await waitFor(() => expect(mockSignIn).toHaveBeenCalledWith('me@example.com', 'hunter2'));
   });
 
   it('switches to sign-up mode and submits signUp instead', async () => {
@@ -34,6 +34,6 @@ describe('Login', () => {
     await user.type(screen.getByPlaceholderText('Email'), 'new@example.com');
     await user.type(screen.getByPlaceholderText('Password'), 'hunter2');
     await user.click(screen.getByRole('button', { name: 'Sign up' }));
-    expect(mockSignUp).toHaveBeenCalledWith('new@example.com', 'hunter2');
+    await waitFor(() => expect(mockSignUp).toHaveBeenCalledWith('new@example.com', 'hunter2'));
   });
 });
