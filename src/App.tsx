@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { useAuth } from './auth/useAuth';
+import { useAuth, signOutUser } from './auth/useAuth';
 import { Login } from './auth/Login';
 import { Dashboard } from './dashboard/Dashboard';
 import { WorkoutScreen } from './domains/workout/WorkoutScreen';
@@ -9,13 +9,24 @@ import { ChoresScreen } from './domains/chores/ChoresScreen';
 function AuthedRoutes({ uid }: { uid: string }) {
   const navigate = useNavigate();
   return (
-    <Routes>
-      <Route path="/" element={<Dashboard uid={uid} onNavigate={navigate} />} />
-      <Route path="/workout" element={<WorkoutScreen uid={uid} />} />
-      <Route path="/learning" element={<LearningScreen uid={uid} />} />
-      <Route path="/chores" element={<ChoresScreen uid={uid} />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <>
+      <header className="p-3 flex justify-end border-b">
+        <button
+          type="button"
+          onClick={() => signOutUser()}
+          className="text-sm text-gray-600 border rounded px-3 py-1"
+        >
+          Sign out
+        </button>
+      </header>
+      <Routes>
+        <Route path="/" element={<Dashboard uid={uid} onNavigate={navigate} />} />
+        <Route path="/workout" element={<WorkoutScreen uid={uid} />} />
+        <Route path="/learning" element={<LearningScreen uid={uid} />} />
+        <Route path="/chores" element={<ChoresScreen uid={uid} />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   );
 }
 

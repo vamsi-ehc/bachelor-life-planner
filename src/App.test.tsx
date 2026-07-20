@@ -1,8 +1,13 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 const mockUseAuth = vi.fn();
-vi.mock('./auth/useAuth', () => ({ useAuth: () => mockUseAuth() }));
+const mockSignOutUser = vi.fn();
+vi.mock('./auth/useAuth', () => ({
+  useAuth: () => mockUseAuth(),
+  signOutUser: (...args: unknown[]) => mockSignOutUser(...args),
+}));
 vi.mock('./auth/Login', () => ({ Login: () => <div>Login screen</div> }));
 vi.mock('./dashboard/Dashboard', () => ({
   Dashboard: ({ uid }: { uid: string }) => <div>Dashboard for {uid}</div>,
@@ -28,5 +33,15 @@ describe('App', () => {
     mockUseAuth.mockReturnValue({ user: { uid: 'user1' }, loading: false });
     render(<App />);
     expect(screen.getByText('Dashboard for user1')).toBeInTheDocument();
+  });
+
+  it('signs out when the Sign out button is clicked', async () => {
+    mockUseAuth.mockReturnValue({ user: { uid: 'user1' }, loading: false });
+    render(<App />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Sign out' }));
+
+    expect(mockSignOutUser).toHaveBeenCalled();
   });
 });
