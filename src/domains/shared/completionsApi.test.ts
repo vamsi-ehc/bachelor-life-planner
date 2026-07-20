@@ -3,10 +3,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const mockDoc = vi.fn((...args: unknown[]) => ({ path: args.join('/') }));
 const mockGetDoc = vi.fn();
 const mockSetDoc = vi.fn();
-const mockCollection = vi.fn(() => ({}));
-const mockQuery = vi.fn(() => ({}));
-const mockOrderBy = vi.fn(() => ({}));
-const mockLimit = vi.fn(() => ({}));
+const mockCollection = vi.fn((..._args: unknown[]) => ({}));
+const mockQuery = vi.fn((..._args: unknown[]) => ({}));
+const mockOrderBy = vi.fn((..._args: unknown[]) => ({}));
+const mockLimit = vi.fn((..._args: unknown[]) => ({}));
 const mockGetDocs = vi.fn();
 
 vi.mock('firebase/firestore', () => ({
