@@ -1,1 +1,22 @@
 .superpowers/
+
+# Node.js
+node_modules/
+package-lock.json
+npm-debug.log*
+
+# Build outputs
+dist/
+.eslintcache
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
