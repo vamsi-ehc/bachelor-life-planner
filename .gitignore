@@ -13,6 +13,9 @@ dist/
 .env.local
 .env.*.local
 
+# Local Firebase project pointer (developer-specific)
+.firebaserc
+
 # IDE
 .vscode/
 .idea/
