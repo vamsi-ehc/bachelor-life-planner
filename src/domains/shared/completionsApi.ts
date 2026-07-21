@@ -9,10 +9,13 @@ export function completionDocRef(uid: string, date: string) {
 
 export async function getCompletion(uid: string, date: string = todayId()): Promise<DailyCompletion> {
   const snap = await getDoc(completionDocRef(uid, date));
-  if (snap.exists()) {
-    return snap.data() as DailyCompletion;
-  }
-  return { date, workout: false, learning: false, chores: {} };
+  const data = snap.exists() ? (snap.data() as Partial<DailyCompletion>) : {};
+  return {
+    date,
+    workout: data.workout ?? false,
+    learning: data.learning ?? false,
+    chores: data.chores ?? {},
+  };
 }
 
 export async function listRecentCompletions(uid: string, days: number): Promise<DailyCompletion[]> {

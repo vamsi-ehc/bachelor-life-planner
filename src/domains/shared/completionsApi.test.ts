@@ -49,6 +49,15 @@ describe('completionsApi', () => {
     expect(result).toEqual(stored);
   });
 
+  it('fills in defaults for fields missing from a partially-written doc', async () => {
+    // Realistic case: setWorkoutDone's merge:true write only ever sets
+    // {date, workout}, so a doc touched by just one setter has no
+    // `learning`/`chores` fields at all until another setter writes them.
+    mockGetDoc.mockResolvedValue({ exists: () => true, data: () => ({ date: '2026-07-20', workout: true }) });
+    const result = await getCompletion('user1', '2026-07-20');
+    expect(result).toEqual({ date: '2026-07-20', workout: true, learning: false, chores: {} });
+  });
+
   it('setWorkoutDone merges the workout flag', async () => {
     await setWorkoutDone('user1', true, '2026-07-20');
     expect(mockSetDoc).toHaveBeenCalledWith(

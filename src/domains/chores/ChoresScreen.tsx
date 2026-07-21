@@ -50,7 +50,7 @@ export function ChoresScreen({ uid }: { uid: string }) {
       <ul className="flex flex-col gap-2">
         {chores.map((chore) => {
           const dueToday = isChoreDueToday(chore, dow);
-          const done = completion?.chores[chore.id] ?? false;
+          const done = completion?.chores?.[chore.id] ?? false;
           return (
             <li key={chore.id} className="flex items-center gap-2">
               <input
