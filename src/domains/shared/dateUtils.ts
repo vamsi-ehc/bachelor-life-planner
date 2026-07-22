@@ -8,3 +8,7 @@ export function todayId(now: Date = new Date()): string {
 export function dayOfWeek(dateId: string): number {
   return new Date(`${dateId}T00:00:00`).getDay();
 }
+
+export function dayOfMonth(dateId: string): number {
+  return new Date(`${dateId}T00:00:00`).getDate();
+}

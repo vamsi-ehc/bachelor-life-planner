@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { todayId, dayOfWeek } from './dateUtils';
+import { todayId, dayOfWeek, dayOfMonth } from './dateUtils';
 
 describe('todayId', () => {
   it('formats a date as YYYY-MM-DD', () => {
@@ -20,5 +20,15 @@ describe('dayOfWeek', () => {
 
   it('returns 1 for a Monday date id', () => {
     expect(dayOfWeek('2026-07-20')).toBe(1);
+  });
+});
+
+describe('dayOfMonth', () => {
+  it('returns the day-of-month number for a date id', () => {
+    expect(dayOfMonth('2026-07-20')).toBe(20);
+  });
+
+  it('returns single-digit days without padding', () => {
+    expect(dayOfMonth('2026-07-05')).toBe(5);
   });
 });
