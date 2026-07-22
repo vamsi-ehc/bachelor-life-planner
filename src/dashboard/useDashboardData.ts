@@ -3,20 +3,27 @@ import { getCompletion, listRecentCompletions } from '../domains/shared/completi
 import { listChores, isChoreDueToday } from '../domains/chores/choresApi';
 import { listBills } from '../domains/finances/billsApi';
 import { listGroceryItems } from '../domains/meals/groceryApi';
+import { getSleepLog } from '../domains/health/sleepApi';
+import { listGoals } from '../domains/goals/goalsApi';
+import { getWeeklyReview } from '../domains/goals/weeklyReviewApi';
 import {
   ChoreConfig,
   DailyCompletion,
   DueItem,
   Bill,
   GroceryItem,
+  SleepLog,
+  Goal,
+  WeeklyReview,
 } from '../domains/shared/types';
-import { todayId, dayOfWeek, dayOfMonth, daysInMonth } from '../domains/shared/dateUtils';
+import { todayId, dayOfWeek, dayOfMonth, daysInMonth, weekId } from '../domains/shared/dateUtils';
 import {
   computeStreak,
   computeDueItems,
   computeDayHealth,
   computeBillDueItems,
   computeGroceryDueItem,
+  computeWeeklyReviewDueItem,
 } from './dashboardLogic';
 
 const STREAK_HISTORY_DAYS = 30;
@@ -32,6 +39,9 @@ export interface DashboardData {
   dueTodayChoreIds: string[];
   streak: number;
   dayHealth: number;
+  sleepLog: SleepLog | null;
+  goals: Goal[];
+  weeklyReview: WeeklyReview | null;
 }
 
 export function useDashboardData(uid: string): DashboardData {
@@ -42,6 +52,9 @@ export function useDashboardData(uid: string): DashboardData {
   const [chores, setChores] = useState<ChoreConfig[]>([]);
   const [bills, setBills] = useState<Bill[]>([]);
   const [groceryItems, setGroceryItems] = useState<GroceryItem[]>([]);
+  const [sleepLog, setSleepLog] = useState<SleepLog | null>(null);
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [weeklyReview, setWeeklyReview] = useState<WeeklyReview | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -50,13 +63,19 @@ export function useDashboardData(uid: string): DashboardData {
       listChores(uid),
       listBills(uid),
       listGroceryItems(uid),
+      getSleepLog(uid),
+      listGoals(uid),
+      getWeeklyReview(uid, weekId(todayId())),
     ])
-      .then(([todayCompletion, recentHistory, choreList, billList, groceryList]) => {
+      .then(([todayCompletion, recentHistory, choreList, billList, groceryList, sleep, goalList, review]) => {
         setCompletion(todayCompletion);
         setHistory(recentHistory);
         setChores(choreList);
         setBills(billList);
         setGroceryItems(groceryList);
+        setSleepLog(sleep);
+        setGoals(goalList);
+        setWeeklyReview(review);
         setLoading(false);
       })
       .catch((err) => {
@@ -77,6 +96,9 @@ export function useDashboardData(uid: string): DashboardData {
       dueTodayChoreIds: [],
       streak: 0,
       dayHealth: 0,
+      sleepLog: null,
+      goals: [],
+      weeklyReview: null,
     };
   }
 
@@ -87,6 +109,7 @@ export function useDashboardData(uid: string): DashboardData {
     ...computeDueItems(chores, completion, dow),
     ...computeBillDueItems(bills, domNow, dimNow),
     ...computeGroceryDueItem(groceryItems),
+    ...computeWeeklyReviewDueItem(dow, weeklyReview),
   ];
   const dueTodayChoreIds = chores.filter((c) => isChoreDueToday(c, dow)).map((c) => c.id);
   const streak = computeStreak(history);
@@ -103,5 +126,8 @@ export function useDashboardData(uid: string): DashboardData {
     dueTodayChoreIds,
     streak,
     dayHealth,
+    sleepLog,
+    goals,
+    weeklyReview,
   };
 }

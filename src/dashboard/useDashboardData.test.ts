@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
+import type { Goal } from '../domains/shared/types';
 
 const mockGetCompletion = vi.fn();
 const mockListRecentCompletions = vi.fn();
@@ -39,6 +40,20 @@ vi.mock('../domains/finances/billsApi', async () => {
 });
 vi.mock('../domains/meals/groceryApi', () => ({
   listGroceryItems: (...args: [string]) => mockListGroceryItems(...args),
+}));
+
+const mockGetSleepLog = vi.fn((..._args: unknown[]) => Promise.resolve({ date: '', bedtime: '', wakeTime: '' }));
+const mockListGoals = vi.fn((..._args: unknown[]) => Promise.resolve([] as Goal[]));
+const mockGetWeeklyReview = vi.fn((..._args: unknown[]) => Promise.resolve(null));
+
+vi.mock('../domains/health/sleepApi', () => ({
+  getSleepLog: (...args: unknown[]) => mockGetSleepLog(...args),
+}));
+vi.mock('../domains/goals/goalsApi', () => ({
+  listGoals: (...args: unknown[]) => mockListGoals(...args),
+}));
+vi.mock('../domains/goals/weeklyReviewApi', () => ({
+  getWeeklyReview: (...args: unknown[]) => mockGetWeeklyReview(...args),
 }));
 
 import { useDashboardData } from './useDashboardData';
@@ -105,5 +120,33 @@ describe('useDashboardData', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     expect(result.current.error).toBe('offline');
+  });
+
+  it('fetches sleep log, goals, and weekly review, and folds a due weekly-review into dueItems', async () => {
+    mockGetCompletion.mockResolvedValue({
+      date: '2026-07-19',
+      workout: true,
+      learning: true,
+      chores: {},
+    });
+    mockListRecentCompletions.mockResolvedValue([]);
+    mockListChores.mockResolvedValue([]);
+    mockListBills.mockResolvedValue([]);
+    mockListGroceryItems.mockResolvedValue([]);
+    mockGetSleepLog.mockResolvedValue({ date: '2026-07-19', bedtime: '23:00', wakeTime: '07:00' });
+    mockListGoals.mockResolvedValue([
+      { id: 'g1', title: 'Run a 10k', targetDate: '2026-12-01', status: 'active', milestones: [] },
+    ]);
+    mockGetWeeklyReview.mockResolvedValue(null);
+
+    const { result } = renderHook(() => useDashboardData('user1'));
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.sleepLog).toEqual({ date: '2026-07-19', bedtime: '23:00', wakeTime: '07:00' });
+    expect(result.current.goals).toEqual([
+      { id: 'g1', title: 'Run a 10k', targetDate: '2026-12-01', status: 'active', milestones: [] },
+    ]);
+    expect(result.current.weeklyReview).toBeNull();
   });
 });
