@@ -1,10 +1,22 @@
 import { useDashboardData } from './useDashboardData';
 import { StatusChip } from '../components/StatusChip';
 import { DueNowStrip } from './DueNowStrip';
+import { isBillDueToday } from '../domains/finances/billsApi';
+import { todayId, dayOfMonth } from '../domains/shared/dateUtils';
 
 export function Dashboard({ uid, onNavigate }: { uid: string; onNavigate: (path: string) => void }) {
-  const { loading, error, completion, chores, dueItems, dueTodayChoreIds, streak, dayHealth } =
-    useDashboardData(uid);
+  const {
+    loading,
+    error,
+    completion,
+    chores,
+    bills,
+    groceryItems,
+    dueItems,
+    dueTodayChoreIds,
+    streak,
+    dayHealth,
+  } = useDashboardData(uid);
 
   if (error) {
     return <p className="p-6">Something went wrong: {error}</p>;
@@ -17,6 +29,10 @@ export function Dashboard({ uid, onNavigate }: { uid: string; onNavigate: (path:
   const dueTodayChores = chores.filter((c) => dueTodayChoreIds.includes(c.id));
   const choresDoneCount = dueTodayChores.filter((c) => completion.chores[c.id]).length;
 
+  const domNow = dayOfMonth(todayId());
+  const billsDueToday = bills.filter((b) => isBillDueToday(b, domNow));
+  const uncheckedGroceryCount = groceryItems.filter((item) => !item.checked).length;
+
   return (
     <div className="p-6 flex flex-col gap-6">
       <div>
@@ -25,7 +41,7 @@ export function Dashboard({ uid, onNavigate }: { uid: string; onNavigate: (path:
         <p className="text-lg">{dayHealth}% of today done</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
         <StatusChip
           label="Workout"
           status={completion.workout ? 'done' : 'not-started'}
@@ -47,6 +63,18 @@ export function Dashboard({ uid, onNavigate }: { uid: string; onNavigate: (path:
           }
           detail={`${choresDoneCount}/${dueTodayChores.length}`}
           onClick={() => onNavigate('/chores')}
+        />
+        <StatusChip
+          label="Finances"
+          status={billsDueToday.length > 0 ? 'in-progress' : 'done'}
+          detail={billsDueToday.length > 0 ? `${billsDueToday.length} bill(s) due` : 'No bills due'}
+          onClick={() => onNavigate('/finances')}
+        />
+        <StatusChip
+          label="Meals"
+          status={uncheckedGroceryCount > 0 ? 'in-progress' : 'done'}
+          detail={`${uncheckedGroceryCount} to buy`}
+          onClick={() => onNavigate('/meals')}
         />
       </div>
 
