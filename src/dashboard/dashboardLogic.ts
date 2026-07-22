@@ -1,5 +1,6 @@
-import { ChoreConfig, DailyCompletion, DueItem } from '../domains/shared/types';
+import { ChoreConfig, DailyCompletion, DueItem, Bill, GroceryItem } from '../domains/shared/types';
 import { isChoreDueToday } from '../domains/chores/choresApi';
+import { isBillDueToday } from '../domains/finances/billsApi';
 
 export function computeStreak(completions: DailyCompletion[]): number {
   let streak = 0;
@@ -30,4 +31,23 @@ export function computeDayHealth(completion: DailyCompletion, dueTodayChoreIds: 
     (completion.learning ? 1 : 0) +
     dueTodayChoreIds.filter((id) => completion.chores[id]).length;
   return totalTasks === 0 ? 100 : Math.round((doneTasks / totalTasks) * 100);
+}
+
+export function computeBillDueItems(bills: Bill[], dayOfMonth: number): DueItem[] {
+  return bills
+    .filter((b) => isBillDueToday(b, dayOfMonth))
+    .map((b) => ({ id: b.id, label: `${b.name} due`, domain: 'finances' as const }));
+}
+
+export function computeGroceryDueItem(groceryItems: GroceryItem[]): DueItem[] {
+  const uncheckedCount = groceryItems.filter((item) => !item.checked).length;
+  if (uncheckedCount === 0) return [];
+  const noun = uncheckedCount === 1 ? 'item' : 'items';
+  return [
+    {
+      id: 'groceries-needed',
+      label: `${uncheckedCount} grocery ${noun} needed`,
+      domain: 'meals' as const,
+    },
+  ];
 }

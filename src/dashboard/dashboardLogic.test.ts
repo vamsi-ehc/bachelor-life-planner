@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { computeStreak, computeDueItems, computeDayHealth } from './dashboardLogic';
-import { ChoreConfig, DailyCompletion } from '../domains/shared/types';
+import { computeStreak, computeDueItems, computeDayHealth, computeBillDueItems, computeGroceryDueItem } from './dashboardLogic';
+import { ChoreConfig, DailyCompletion, Bill, GroceryItem } from '../domains/shared/types';
 
 vi.mock('../firebase/config', () => ({ db: {} }));
 
@@ -61,5 +61,45 @@ describe('computeDayHealth', () => {
     // workout + learning always count as 2 base tasks, so this case only
     // arises hypothetically; guard against division by zero regardless.
     expect(computeDayHealth(completion, [])).toBe(0);
+  });
+});
+
+describe('computeBillDueItems', () => {
+  it('lists bills due today by dueDay match', () => {
+    const bills: Bill[] = [
+      { id: 'b1', name: 'Rent', amount: 1200, dueDay: 1, category: 'Housing' },
+      { id: 'b2', name: 'Internet', amount: 60, dueDay: 15, category: 'Utilities' },
+    ];
+    expect(computeBillDueItems(bills, 1)).toEqual([{ id: 'b1', label: 'Rent due', domain: 'finances' }]);
+  });
+
+  it('returns an empty array when no bills are due', () => {
+    const bills: Bill[] = [{ id: 'b1', name: 'Rent', amount: 1200, dueDay: 1, category: 'Housing' }];
+    expect(computeBillDueItems(bills, 10)).toEqual([]);
+  });
+});
+
+describe('computeGroceryDueItem', () => {
+  it('returns one summary item with the unchecked count when items are pending', () => {
+    const items: GroceryItem[] = [
+      { id: 'g1', name: 'Milk', checked: false },
+      { id: 'g2', name: 'Eggs', checked: true },
+      { id: 'g3', name: 'Bread', checked: false },
+    ];
+    expect(computeGroceryDueItem(items)).toEqual([
+      { id: 'groceries-needed', label: '2 grocery items needed', domain: 'meals' },
+    ]);
+  });
+
+  it('uses singular phrasing for exactly one pending item', () => {
+    const items: GroceryItem[] = [{ id: 'g1', name: 'Milk', checked: false }];
+    expect(computeGroceryDueItem(items)).toEqual([
+      { id: 'groceries-needed', label: '1 grocery item needed', domain: 'meals' },
+    ]);
+  });
+
+  it('returns an empty array when everything is checked off', () => {
+    const items: GroceryItem[] = [{ id: 'g1', name: 'Milk', checked: true }];
+    expect(computeGroceryDueItem(items)).toEqual([]);
   });
 });
