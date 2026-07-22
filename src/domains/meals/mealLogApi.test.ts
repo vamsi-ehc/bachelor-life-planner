@@ -31,6 +31,15 @@ describe('mealLogApi', () => {
     expect(result).toEqual({ date: '2026-07-20', entries: [] });
   });
 
+  it('defaults entries to an empty array when the stored value is not an array', async () => {
+    mockGetDoc.mockResolvedValue({
+      exists: () => true,
+      data: () => ({ date: '2026-07-20', entries: 'x' }),
+    });
+    const result = await getMealLog('user1', '2026-07-20');
+    expect(result).toEqual({ date: '2026-07-20', entries: [] });
+  });
+
   it('returns the stored entries when present', async () => {
     mockGetDoc.mockResolvedValue({
       exists: () => true,

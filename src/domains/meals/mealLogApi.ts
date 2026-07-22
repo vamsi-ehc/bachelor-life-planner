@@ -10,7 +10,7 @@ export function mealLogDocRef(uid: string, date: string) {
 export async function getMealLog(uid: string, date: string = todayId()): Promise<MealLog> {
   const snap = await getDoc(mealLogDocRef(uid, date));
   const data = snap.exists() ? (snap.data() as Partial<MealLog>) : {};
-  return { date, entries: data.entries ?? [] };
+  return { date, entries: Array.isArray(data.entries) ? data.entries : [] };
 }
 
 export async function addMealEntry(uid: string, entry: string, date: string = todayId()): Promise<void> {
