@@ -10,7 +10,7 @@ import {
   Bill,
   GroceryItem,
 } from '../domains/shared/types';
-import { todayId, dayOfWeek, dayOfMonth } from '../domains/shared/dateUtils';
+import { todayId, dayOfWeek, dayOfMonth, daysInMonth } from '../domains/shared/dateUtils';
 import {
   computeStreak,
   computeDueItems,
@@ -82,9 +82,10 @@ export function useDashboardData(uid: string): DashboardData {
 
   const dow = dayOfWeek(todayId());
   const domNow = dayOfMonth(todayId());
+  const dimNow = daysInMonth(todayId());
   const dueItems = [
     ...computeDueItems(chores, completion, dow),
-    ...computeBillDueItems(bills, domNow),
+    ...computeBillDueItems(bills, domNow, dimNow),
     ...computeGroceryDueItem(groceryItems),
   ];
   const dueTodayChoreIds = chores.filter((c) => isChoreDueToday(c, dow)).map((c) => c.id);

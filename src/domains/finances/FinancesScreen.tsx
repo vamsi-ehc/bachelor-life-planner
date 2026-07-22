@@ -4,7 +4,7 @@ import { listBudgets, saveBudget } from './budgetsApi';
 import { listBills, saveBill, isBillDueToday } from './billsApi';
 import { computeCategorySpend, computeBudgetPercent } from './financeLogic';
 import { Transaction, Budget, Bill } from '../shared/types';
-import { todayId, dayOfMonth } from '../shared/dateUtils';
+import { todayId, dayOfMonth, daysInMonth } from '../shared/dateUtils';
 
 function currentMonth(): string {
   return todayId().slice(0, 7);
@@ -92,6 +92,7 @@ export function FinancesScreen({ uid }: { uid: string }) {
   }
 
   const dayOfMonthNow = dayOfMonth(todayId());
+  const daysInMonthNow = daysInMonth(todayId());
 
   return (
     <div className="p-6 flex flex-col gap-6">
@@ -196,7 +197,7 @@ export function FinancesScreen({ uid }: { uid: string }) {
               <span>
                 {bill.name} — ${bill.amount.toFixed(2)} (due day {bill.dueDay})
               </span>
-              {isBillDueToday(bill, dayOfMonthNow) && (
+              {isBillDueToday(bill, dayOfMonthNow, daysInMonthNow) && (
                 <span className="text-xs bg-amber-100 text-amber-800 rounded px-2 py-0.5">Due today</span>
               )}
             </li>

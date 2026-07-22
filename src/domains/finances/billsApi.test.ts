@@ -19,12 +19,37 @@ import { listBills, saveBill, isBillDueToday } from './billsApi';
 describe('isBillDueToday', () => {
   it('is due when the bill\'s dueDay matches the given day of month', () => {
     const bill: Bill = { id: 'b1', name: 'Rent', amount: 1200, dueDay: 1, category: 'Housing' };
-    expect(isBillDueToday(bill, 1)).toBe(true);
+    expect(isBillDueToday(bill, 1, 31)).toBe(true);
   });
 
   it('is not due when the days differ', () => {
     const bill: Bill = { id: 'b1', name: 'Rent', amount: 1200, dueDay: 1, category: 'Housing' };
-    expect(isBillDueToday(bill, 15)).toBe(false);
+    expect(isBillDueToday(bill, 15, 31)).toBe(false);
+  });
+
+  it('clamps a dueDay of 31 to fire on the last day of a 30-day month', () => {
+    const bill: Bill = { id: 'b1', name: 'Rent', amount: 1200, dueDay: 31, category: 'Housing' };
+    expect(isBillDueToday(bill, 30, 30)).toBe(true);
+  });
+
+  it('does not fire before the last day of a short month even if dueDay is beyond it', () => {
+    const bill: Bill = { id: 'b1', name: 'Rent', amount: 1200, dueDay: 31, category: 'Housing' };
+    expect(isBillDueToday(bill, 29, 30)).toBe(false);
+  });
+
+  it('clamps a dueDay of 31 to fire on Feb 28 in a non-leap year', () => {
+    const bill: Bill = { id: 'b1', name: 'Rent', amount: 1200, dueDay: 31, category: 'Housing' };
+    expect(isBillDueToday(bill, 28, 28)).toBe(true);
+  });
+
+  it('clamps a dueDay of 31 to fire on Feb 29 in a leap year', () => {
+    const bill: Bill = { id: 'b1', name: 'Rent', amount: 1200, dueDay: 31, category: 'Housing' };
+    expect(isBillDueToday(bill, 29, 29)).toBe(true);
+  });
+
+  it('does not double-fire on a non-clamp day when dueDay is within range', () => {
+    const bill: Bill = { id: 'b1', name: 'Rent', amount: 1200, dueDay: 15, category: 'Housing' };
+    expect(isBillDueToday(bill, 30, 30)).toBe(false);
   });
 });
 

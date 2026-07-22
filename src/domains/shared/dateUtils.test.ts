@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { todayId, dayOfWeek, dayOfMonth } from './dateUtils';
+import { todayId, dayOfWeek, dayOfMonth, daysInMonth } from './dateUtils';
 
 describe('todayId', () => {
   it('formats a date as YYYY-MM-DD', () => {
@@ -30,5 +30,23 @@ describe('dayOfMonth', () => {
 
   it('returns single-digit days without padding', () => {
     expect(dayOfMonth('2026-07-05')).toBe(5);
+  });
+});
+
+describe('daysInMonth', () => {
+  it('returns 31 for a 31-day month', () => {
+    expect(daysInMonth('2026-07-05')).toBe(31);
+  });
+
+  it('returns 30 for a 30-day month', () => {
+    expect(daysInMonth('2026-04-05')).toBe(30);
+  });
+
+  it('returns 28 for February in a non-leap year', () => {
+    expect(daysInMonth('2026-02-10')).toBe(28);
+  });
+
+  it('returns 29 for February in a leap year', () => {
+    expect(daysInMonth('2024-02-10')).toBe(29);
   });
 });

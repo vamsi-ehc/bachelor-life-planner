@@ -12,3 +12,8 @@ export function dayOfWeek(dateId: string): number {
 export function dayOfMonth(dateId: string): number {
   return new Date(`${dateId}T00:00:00`).getDate();
 }
+
+export function daysInMonth(dateId: string): number {
+  const d = new Date(`${dateId}T00:00:00`);
+  return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+}

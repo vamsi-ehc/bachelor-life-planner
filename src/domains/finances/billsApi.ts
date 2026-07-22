@@ -25,6 +25,6 @@ export async function saveBill(uid: string, bill: Bill): Promise<void> {
   });
 }
 
-export function isBillDueToday(bill: Bill, dayOfMonth: number): boolean {
-  return bill.dueDay === dayOfMonth;
+export function isBillDueToday(bill: Bill, dayOfMonth: number, daysInMonth: number): boolean {
+  return bill.dueDay === dayOfMonth || (dayOfMonth === daysInMonth && bill.dueDay > daysInMonth);
 }

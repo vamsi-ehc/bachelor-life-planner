@@ -70,12 +70,17 @@ describe('computeBillDueItems', () => {
       { id: 'b1', name: 'Rent', amount: 1200, dueDay: 1, category: 'Housing' },
       { id: 'b2', name: 'Internet', amount: 60, dueDay: 15, category: 'Utilities' },
     ];
-    expect(computeBillDueItems(bills, 1)).toEqual([{ id: 'b1', label: 'Rent due', domain: 'finances' }]);
+    expect(computeBillDueItems(bills, 1, 31)).toEqual([{ id: 'b1', label: 'Rent due', domain: 'finances' }]);
   });
 
   it('returns an empty array when no bills are due', () => {
     const bills: Bill[] = [{ id: 'b1', name: 'Rent', amount: 1200, dueDay: 1, category: 'Housing' }];
-    expect(computeBillDueItems(bills, 10)).toEqual([]);
+    expect(computeBillDueItems(bills, 10, 31)).toEqual([]);
+  });
+
+  it('clamps a dueDay beyond the month length to the last day of a short month', () => {
+    const bills: Bill[] = [{ id: 'b1', name: 'Rent', amount: 1200, dueDay: 31, category: 'Housing' }];
+    expect(computeBillDueItems(bills, 30, 30)).toEqual([{ id: 'b1', label: 'Rent due', domain: 'finances' }]);
   });
 });
 

@@ -2,7 +2,7 @@ import { useDashboardData } from './useDashboardData';
 import { StatusChip } from '../components/StatusChip';
 import { DueNowStrip } from './DueNowStrip';
 import { isBillDueToday } from '../domains/finances/billsApi';
-import { todayId, dayOfMonth } from '../domains/shared/dateUtils';
+import { todayId, dayOfMonth, daysInMonth } from '../domains/shared/dateUtils';
 
 export function Dashboard({ uid, onNavigate }: { uid: string; onNavigate: (path: string) => void }) {
   const {
@@ -30,7 +30,8 @@ export function Dashboard({ uid, onNavigate }: { uid: string; onNavigate: (path:
   const choresDoneCount = dueTodayChores.filter((c) => completion.chores[c.id]).length;
 
   const domNow = dayOfMonth(todayId());
-  const billsDueToday = bills.filter((b) => isBillDueToday(b, domNow));
+  const dimNow = daysInMonth(todayId());
+  const billsDueToday = bills.filter((b) => isBillDueToday(b, domNow, dimNow));
   const uncheckedGroceryCount = groceryItems.filter((item) => !item.checked).length;
 
   return (

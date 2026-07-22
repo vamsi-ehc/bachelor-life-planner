@@ -33,9 +33,9 @@ export function computeDayHealth(completion: DailyCompletion, dueTodayChoreIds: 
   return totalTasks === 0 ? 100 : Math.round((doneTasks / totalTasks) * 100);
 }
 
-export function computeBillDueItems(bills: Bill[], dayOfMonth: number): DueItem[] {
+export function computeBillDueItems(bills: Bill[], dayOfMonth: number, daysInMonth: number): DueItem[] {
   return bills
-    .filter((b) => isBillDueToday(b, dayOfMonth))
+    .filter((b) => isBillDueToday(b, dayOfMonth, daysInMonth))
     .map((b) => ({ id: b.id, label: `${b.name} due`, domain: 'finances' as const }));
 }
 
