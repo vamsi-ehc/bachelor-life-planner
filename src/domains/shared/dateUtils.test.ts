@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { todayId, dayOfWeek, dayOfMonth, daysInMonth } from './dateUtils';
+import { todayId, dayOfWeek, dayOfMonth, daysInMonth, weekId } from './dateUtils';
 
 describe('todayId', () => {
   it('formats a date as YYYY-MM-DD', () => {
@@ -48,5 +48,19 @@ describe('daysInMonth', () => {
 
   it('returns 29 for February in a leap year', () => {
     expect(daysInMonth('2024-02-10')).toBe(29);
+  });
+});
+
+describe('weekId', () => {
+  it('returns the same date when given a Sunday', () => {
+    expect(weekId('2026-07-19')).toBe('2026-07-19');
+  });
+
+  it('returns the preceding Sunday for a mid-week date', () => {
+    expect(weekId('2026-07-22')).toBe('2026-07-19');
+  });
+
+  it('returns the preceding Sunday even when it falls in the previous month', () => {
+    expect(weekId('2026-08-01')).toBe('2026-07-26');
   });
 });

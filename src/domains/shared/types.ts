@@ -1,4 +1,4 @@
-export type DomainKey = 'workout' | 'learning' | 'chores' | 'finances' | 'meals';
+export type DomainKey = 'workout' | 'learning' | 'chores' | 'finances' | 'meals' | 'health' | 'goals';
 
 export interface DailyCompletion {
   date: string;
@@ -65,4 +65,37 @@ export interface GroceryItem {
 export interface MealLog {
   date: string;
   entries: string[];
+}
+
+export interface SleepLog {
+  date: string;
+  bedtime: string;
+  wakeTime: string;
+}
+
+export interface WeightEntry {
+  id: string;
+  date: string;
+  weightKg: number;
+}
+
+export interface Milestone {
+  id: string;
+  label: string;
+  done: boolean;
+}
+
+export interface Goal {
+  id: string;
+  title: string;
+  targetDate: string;
+  status: 'active' | 'done';
+  milestones: Milestone[];
+}
+
+export interface WeeklyReview {
+  weekId: string;
+  wentWell: string;
+  wentBadly: string;
+  focusNext: string;
 }
