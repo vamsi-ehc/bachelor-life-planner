@@ -7,6 +7,8 @@ import { LearningScreen } from './domains/learning/LearningScreen';
 import { ChoresScreen } from './domains/chores/ChoresScreen';
 import { FinancesScreen } from './domains/finances/FinancesScreen';
 import { MealsScreen } from './domains/meals/MealsScreen';
+import { HealthScreen } from './domains/health/HealthScreen';
+import { GoalsScreen } from './domains/goals/GoalsScreen';
 
 function AuthedRoutes({ uid }: { uid: string }) {
   const navigate = useNavigate();
@@ -28,6 +30,8 @@ function AuthedRoutes({ uid }: { uid: string }) {
         <Route path="/chores" element={<ChoresScreen uid={uid} />} />
         <Route path="/finances" element={<FinancesScreen uid={uid} />} />
         <Route path="/meals" element={<MealsScreen uid={uid} />} />
+        <Route path="/health" element={<HealthScreen uid={uid} />} />
+        <Route path="/goals" element={<GoalsScreen uid={uid} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>

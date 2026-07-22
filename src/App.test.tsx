@@ -18,6 +18,12 @@ vi.mock('./domains/finances/FinancesScreen', () => ({
 vi.mock('./domains/meals/MealsScreen', () => ({
   MealsScreen: ({ uid }: { uid: string }) => <div>Meals for {uid}</div>,
 }));
+vi.mock('./domains/health/HealthScreen', () => ({
+  HealthScreen: ({ uid }: { uid: string }) => <div>Health for {uid}</div>,
+}));
+vi.mock('./domains/goals/GoalsScreen', () => ({
+  GoalsScreen: ({ uid }: { uid: string }) => <div>Goals for {uid}</div>,
+}));
 vi.mock('./firebase/config', () => ({ auth: {}, db: {} }));
 
 import App from './App';
@@ -67,5 +73,19 @@ describe('App', () => {
     window.history.pushState({}, '', '/meals');
     render(<App />);
     expect(screen.getByText('Meals for user1')).toBeInTheDocument();
+  });
+
+  it('renders HealthScreen at /health', async () => {
+    mockUseAuth.mockReturnValue({ user: { uid: 'user1' }, loading: false });
+    window.history.pushState({}, '', '/health');
+    render(<App />);
+    expect(await screen.findByText('Health for user1')).toBeInTheDocument();
+  });
+
+  it('renders GoalsScreen at /goals', async () => {
+    mockUseAuth.mockReturnValue({ user: { uid: 'user1' }, loading: false });
+    window.history.pushState({}, '', '/goals');
+    render(<App />);
+    expect(await screen.findByText('Goals for user1')).toBeInTheDocument();
   });
 });
