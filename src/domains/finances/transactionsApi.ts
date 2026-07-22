@@ -15,5 +15,15 @@ export async function listTransactionsForMonth(uid: string, month: string): Prom
     orderBy('date', 'desc')
   );
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Transaction, 'id'>) }));
+  return snap.docs.map((d) => {
+    const data = d.data() as Partial<Omit<Transaction, 'id'>>;
+    return {
+      id: d.id,
+      date: data.date ?? '',
+      amount: typeof data.amount === 'number' ? data.amount : 0,
+      category: data.category ?? '',
+      type: data.type === 'income' ? 'income' : 'expense',
+      ...(data.note !== undefined && { note: data.note }),
+    };
+  });
 }

@@ -56,4 +56,24 @@ describe('transactionsApi', () => {
       { id: 'tx1', date: '2026-07-20', amount: 42.5, category: 'Groceries', type: 'expense' },
     ]);
   });
+
+  it('listTransactionsForMonth defaults missing fields', async () => {
+    mockGetDocs.mockResolvedValue({
+      docs: [
+        {
+          id: 'tx2',
+          data: () => ({ category: 'Food' }),
+        },
+        {
+          id: 'tx3',
+          data: () => ({ date: '2026-07-19', amount: 15.0, type: 'income', note: 'Bonus' }),
+        },
+      ],
+    });
+    const result = await listTransactionsForMonth('user1', '2026-07');
+    expect(result).toEqual([
+      { id: 'tx2', date: '', amount: 0, category: 'Food', type: 'expense' },
+      { id: 'tx3', date: '2026-07-19', amount: 15.0, category: '', type: 'income', note: 'Bonus' },
+    ]);
+  });
 });
