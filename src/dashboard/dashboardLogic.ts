@@ -1,6 +1,7 @@
-import { ChoreConfig, DailyCompletion, DueItem, Bill, GroceryItem } from '../domains/shared/types';
+import { ChoreConfig, DailyCompletion, DueItem, Bill, GroceryItem, WeeklyReview } from '../domains/shared/types';
 import { isChoreDueToday } from '../domains/chores/choresApi';
 import { isBillDueToday } from '../domains/finances/billsApi';
+import { isWeeklyReviewDue } from '../domains/goals/goalsLogic';
 
 export function computeStreak(completions: DailyCompletion[]): number {
   let streak = 0;
@@ -50,4 +51,9 @@ export function computeGroceryDueItem(groceryItems: GroceryItem[]): DueItem[] {
       domain: 'meals' as const,
     },
   ];
+}
+
+export function computeWeeklyReviewDueItem(dow: number, review: WeeklyReview | null): DueItem[] {
+  if (!isWeeklyReviewDue(dow, review)) return [];
+  return [{ id: 'weekly-review', label: 'Weekly review due', domain: 'goals' as const }];
 }

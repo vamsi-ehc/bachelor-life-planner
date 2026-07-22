@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { computeStreak, computeDueItems, computeDayHealth, computeBillDueItems, computeGroceryDueItem } from './dashboardLogic';
-import { ChoreConfig, DailyCompletion, Bill, GroceryItem } from '../domains/shared/types';
+import { computeStreak, computeDueItems, computeDayHealth, computeBillDueItems, computeGroceryDueItem, computeWeeklyReviewDueItem } from './dashboardLogic';
+import { ChoreConfig, DailyCompletion, Bill, GroceryItem, WeeklyReview } from '../domains/shared/types';
 
 vi.mock('../firebase/config', () => ({ db: {} }));
 
@@ -106,5 +106,22 @@ describe('computeGroceryDueItem', () => {
   it('returns an empty array when everything is checked off', () => {
     const items: GroceryItem[] = [{ id: 'g1', name: 'Milk', checked: true }];
     expect(computeGroceryDueItem(items)).toEqual([]);
+  });
+});
+
+describe('computeWeeklyReviewDueItem', () => {
+  it('returns a due item on Sunday when no review has been recorded', () => {
+    expect(computeWeeklyReviewDueItem(0, null)).toEqual([
+      { id: 'weekly-review', label: 'Weekly review due', domain: 'goals' },
+    ]);
+  });
+
+  it('returns an empty array on Sunday when a review already exists', () => {
+    const review: WeeklyReview = { weekId: '2026-07-19', wentWell: '', wentBadly: '', focusNext: '' };
+    expect(computeWeeklyReviewDueItem(0, review)).toEqual([]);
+  });
+
+  it('returns an empty array on a non-Sunday day', () => {
+    expect(computeWeeklyReviewDueItem(3, null)).toEqual([]);
   });
 });
