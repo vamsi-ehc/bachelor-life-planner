@@ -9,6 +9,8 @@ import { FinancesScreen } from './domains/finances/FinancesScreen';
 import { MealsScreen } from './domains/meals/MealsScreen';
 import { HealthScreen } from './domains/health/HealthScreen';
 import { GoalsScreen } from './domains/goals/GoalsScreen';
+import { InstallPrompt } from './pwa/InstallPrompt';
+import { UpdateToast } from './pwa/UpdateToast';
 
 function AuthedRoutes({ uid }: { uid: string }) {
   const navigate = useNavigate();
@@ -23,6 +25,9 @@ function AuthedRoutes({ uid }: { uid: string }) {
           Sign out
         </button>
       </header>
+      <div className="p-3">
+        <InstallPrompt />
+      </div>
       <Routes>
         <Route path="/" element={<Dashboard uid={uid} onNavigate={navigate} />} />
         <Route path="/workout" element={<WorkoutScreen uid={uid} />} />
@@ -34,6 +39,7 @@ function AuthedRoutes({ uid }: { uid: string }) {
         <Route path="/goals" element={<GoalsScreen uid={uid} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <UpdateToast />
     </>
   );
 }
