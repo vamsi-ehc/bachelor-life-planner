@@ -18,6 +18,9 @@ describe('Dashboard', () => {
       chores: [],
       bills: [],
       groceryItems: [],
+      sleepLog: null,
+      goals: [],
+      weeklyReview: null,
       dueItems: [{ id: 'c1', label: 'Laundry', domain: 'chores' }],
       dueTodayChoreIds: [],
       streak: 3,
@@ -42,6 +45,9 @@ describe('Dashboard', () => {
       chores: [],
       bills: [],
       groceryItems: [],
+      sleepLog: null,
+      goals: [],
+      weeklyReview: null,
       dueItems: [],
       dueTodayChoreIds: [],
       streak: 3,
@@ -63,6 +69,9 @@ describe('Dashboard', () => {
       chores: [],
       bills: [],
       groceryItems: [],
+      sleepLog: null,
+      goals: [],
+      weeklyReview: null,
       dueItems: [],
       dueTodayChoreIds: [],
       streak: 3,
@@ -84,6 +93,9 @@ describe('Dashboard', () => {
       chores: [],
       bills: [],
       groceryItems: [],
+      sleepLog: null,
+      goals: [],
+      weeklyReview: null,
       dueItems: [],
       dueTodayChoreIds: [],
       streak: 3,
@@ -105,6 +117,9 @@ describe('Dashboard', () => {
       chores: [],
       bills: [{ id: 'b1', name: 'Rent', amount: 1200, dueDay: new Date().getDate(), category: 'Housing' }],
       groceryItems: [],
+      sleepLog: null,
+      goals: [],
+      weeklyReview: null,
       dueItems: [],
       dueTodayChoreIds: [],
       streak: 3,
@@ -122,6 +137,9 @@ describe('Dashboard', () => {
       chores: [],
       bills: [{ id: 'b1', name: 'Rent', amount: 1200, dueDay: new Date().getDate() === 1 ? 2 : 1, category: 'Housing' }],
       groceryItems: [],
+      sleepLog: null,
+      goals: [],
+      weeklyReview: null,
       dueItems: [],
       dueTodayChoreIds: [],
       streak: 3,
@@ -142,6 +160,9 @@ describe('Dashboard', () => {
         { id: 'g1', name: 'Milk', checked: false },
         { id: 'g2', name: 'Eggs', checked: true },
       ],
+      sleepLog: null,
+      goals: [],
+      weeklyReview: null,
       dueItems: [],
       dueTodayChoreIds: [],
       streak: 3,
@@ -159,6 +180,9 @@ describe('Dashboard', () => {
       chores: [],
       bills: [],
       groceryItems: [],
+      sleepLog: null,
+      goals: [],
+      weeklyReview: null,
       dueItems: [],
       dueTodayChoreIds: [],
       streak: 0,
@@ -166,6 +190,37 @@ describe('Dashboard', () => {
     });
     render(<Dashboard uid="user1" onNavigate={vi.fn()} />);
     expect(screen.getByText('Something went wrong: permission denied')).toBeInTheDocument();
+  });
+
+  it('renders Health and Goals chips', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-07-19T12:00:00'));
+    mockUseDashboardData.mockReturnValue({
+      loading: false,
+      error: null,
+      completion: { date: '2026-07-19', workout: true, learning: true, chores: {} },
+      chores: [],
+      bills: [],
+      groceryItems: [],
+      sleepLog: { date: '2026-07-19', bedtime: '23:00', wakeTime: '07:00' },
+      goals: [
+        { id: 'g1', title: 'Run a 10k', targetDate: '2026-12-01', status: 'active', milestones: [] },
+      ],
+      weeklyReview: null,
+      dueItems: [],
+      dueTodayChoreIds: [],
+      streak: 3,
+      dayHealth: 100,
+    });
+
+    render(<Dashboard uid="user1" onNavigate={vi.fn()} />);
+
+    expect(screen.getByText('Health')).toBeInTheDocument();
+    expect(screen.getByText('8h slept')).toBeInTheDocument();
+    expect(screen.getByText('Goals')).toBeInTheDocument();
+    expect(screen.getByText('Review due')).toBeInTheDocument();
+
+    vi.useRealTimers();
   });
 
   it('computes the Chores chip denominator using only chores due today', () => {
@@ -184,6 +239,9 @@ describe('Dashboard', () => {
       ],
       bills: [],
       groceryItems: [],
+      sleepLog: null,
+      goals: [],
+      weeklyReview: null,
       dueItems: [],
       dueTodayChoreIds: ['c1'],
       streak: 3,
