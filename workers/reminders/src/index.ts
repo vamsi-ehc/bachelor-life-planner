@@ -8,7 +8,6 @@ import { isBillDueToday, isChoreDueToday, daysInMonthFor, Bill, ChoreConfig } fr
 export interface Env {
   GOOGLE_SERVICE_ACCOUNT_KEY: string;
   FIREBASE_PROJECT_ID: string;
-  FIREBASE_UID: string;
 }
 
 interface ReminderConfig {
@@ -67,11 +66,13 @@ interface PushJob {
   body: string;
 }
 
-export async function runReminderCheck(env: Env, now: Date = new Date()): Promise<void> {
-  const key = JSON.parse(env.GOOGLE_SERVICE_ACCOUNT_KEY) as ServiceAccountKey;
-  const accessToken = await getAccessToken(key, SCOPES);
-  const projectId = env.FIREBASE_PROJECT_ID;
-  const base = `users/${env.FIREBASE_UID}`;
+export async function runReminderCheckForUser(
+  projectId: string,
+  accessToken: string,
+  uid: string,
+  now: Date,
+): Promise<void> {
+  const base = `users/${uid}`;
 
   const configData = await getDocument(projectId, accessToken, `${base}/config/reminders`);
   const config = decodeReminderConfig(configData);
@@ -136,6 +137,22 @@ export async function runReminderCheck(env: Env, now: Date = new Date()): Promis
       }
     }
     await patchDocument(projectId, accessToken, `${base}/reminderState/${job.key}`, { lastSentDate: job.todayId });
+  }
+}
+
+export async function runReminderCheck(env: Env, now: Date = new Date()): Promise<void> {
+  const key = JSON.parse(env.GOOGLE_SERVICE_ACCOUNT_KEY) as ServiceAccountKey;
+  const accessToken = await getAccessToken(key, SCOPES);
+  const projectId = env.FIREBASE_PROJECT_ID;
+
+  const users = await listDocuments(projectId, accessToken, 'users');
+
+  for (const userDoc of users) {
+    try {
+      await runReminderCheckForUser(projectId, accessToken, userDoc.id, now);
+    } catch (err) {
+      console.error(`Reminder check failed for user ${userDoc.id}`, err);
+    }
   }
 }
 
