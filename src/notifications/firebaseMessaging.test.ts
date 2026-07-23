@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockIsSupported = vi.fn();
-const mockGetMessaging = vi.fn(() => ({}));
+const mockGetMessaging = vi.fn((..._args: unknown[]) => ({}));
 const mockGetToken = vi.fn();
 
 vi.mock('firebase/messaging', () => ({
