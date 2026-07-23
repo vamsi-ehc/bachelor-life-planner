@@ -2,38 +2,38 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-const mockSignIn = vi.fn().mockResolvedValue(undefined);
-const mockSignUp = vi.fn().mockResolvedValue(undefined);
+const mockSignInWithGoogle = vi.fn().mockResolvedValue(undefined);
 
 vi.mock('./useAuth', () => ({
-  signIn: (...args: [string, string]) => mockSignIn(...args),
-  signUp: (...args: [string, string]) => mockSignUp(...args),
+  signInWithGoogle: () => mockSignInWithGoogle(),
 }));
 
 import { Login } from './Login';
 
 describe('Login', () => {
   beforeEach(() => {
-    mockSignIn.mockClear();
-    mockSignUp.mockClear();
+    mockSignInWithGoogle.mockClear();
   });
 
-  it('submits sign-in with the entered email and password', async () => {
+  it('renders a single Google sign-in button', () => {
     render(<Login />);
-    const user = userEvent.setup();
-    await user.type(screen.getByPlaceholderText('Email'), 'me@example.com');
-    await user.type(screen.getByPlaceholderText('Password'), 'hunter2');
-    await user.click(screen.getByRole('button', { name: 'Sign in' }));
-    await waitFor(() => expect(mockSignIn).toHaveBeenCalledWith('me@example.com', 'hunter2'));
+    expect(screen.getByRole('button', { name: /sign in with google/i })).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('Email')).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('Password')).not.toBeInTheDocument();
   });
 
-  it('switches to sign-up mode and submits signUp instead', async () => {
+  it('calls signInWithGoogle when clicked', async () => {
     render(<Login />);
     const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: /need an account/i }));
-    await user.type(screen.getByPlaceholderText('Email'), 'new@example.com');
-    await user.type(screen.getByPlaceholderText('Password'), 'hunter2');
-    await user.click(screen.getByRole('button', { name: 'Sign up' }));
-    await waitFor(() => expect(mockSignUp).toHaveBeenCalledWith('new@example.com', 'hunter2'));
+    await user.click(screen.getByRole('button', { name: /sign in with google/i }));
+    await waitFor(() => expect(mockSignInWithGoogle).toHaveBeenCalledTimes(1));
+  });
+
+  it('shows an error if signInWithGoogle rejects', async () => {
+    mockSignInWithGoogle.mockRejectedValueOnce(new Error('popup blocked'));
+    render(<Login />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: /sign in with google/i }));
+    await waitFor(() => expect(screen.getByText('popup blocked')).toBeInTheDocument());
   });
 });
