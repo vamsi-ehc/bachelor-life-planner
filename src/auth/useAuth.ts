@@ -1,25 +1,36 @@
 import { useEffect, useState } from 'react';
 import {
   onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
+  signInWithRedirect,
+  getRedirectResult,
+  GoogleAuthProvider,
   signOut,
   User,
-  UserCredential,
 } from 'firebase/auth';
 import { auth } from '../firebase/config';
+import { registerUser } from './userRegistry';
 
 export interface AuthState {
   user: User | null;
   loading: boolean;
+  redirectError: string | null;
 }
 
 export function useAuth(): AuthState {
-  const [state, setState] = useState<AuthState>({ user: null, loading: true });
+  const [state, setState] = useState<AuthState>({ user: null, loading: true, redirectError: null });
 
   useEffect(() => {
+    getRedirectResult(auth).catch((err) => {
+      setState((prev) => ({ ...prev, redirectError: err instanceof Error ? err.message : 'Sign-in failed' }));
+    });
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setState({ user, loading: false });
+      setState((prev) => ({ ...prev, user, loading: false }));
+      if (user) {
+        registerUser(user.uid, user.email).catch((err) => {
+          console.error('Failed to register user', err);
+        });
+      }
     });
     return unsubscribe;
   }, []);
@@ -27,12 +38,8 @@ export function useAuth(): AuthState {
   return state;
 }
 
-export function signIn(email: string, password: string): Promise<UserCredential> {
-  return signInWithEmailAndPassword(auth, email, password);
-}
-
-export function signUp(email: string, password: string): Promise<UserCredential> {
-  return createUserWithEmailAndPassword(auth, email, password);
+export function signInWithGoogle(): Promise<void> {
+  return signInWithRedirect(auth, new GoogleAuthProvider());
 }
 
 export function signOutUser(): Promise<void> {
