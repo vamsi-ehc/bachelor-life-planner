@@ -99,3 +99,11 @@ export interface WeeklyReview {
   wentBadly: string;
   focusNext: string;
 }
+
+export interface ReminderConfig {
+  workoutTime: string;
+  dinnerTime: string;
+  learningTime: string;
+  weeklyReviewTime: string;
+  timezone: string;
+}
