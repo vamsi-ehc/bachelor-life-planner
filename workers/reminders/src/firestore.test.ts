@@ -2,7 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getDocument, listDocuments, patchDocument, deleteDocument } from './firestore';
 
 describe('getDocument', () => {
-  beforeEach(() => vi.restoreAllMocks());
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it('decodes string, integer, boolean, and map fields', async () => {
     vi.stubGlobal(
@@ -39,7 +41,9 @@ describe('getDocument', () => {
 });
 
 describe('listDocuments', () => {
-  beforeEach(() => vi.restoreAllMocks());
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it('returns id + decoded data for each document', async () => {
     vi.stubGlobal(
@@ -70,7 +74,9 @@ describe('listDocuments', () => {
 });
 
 describe('patchDocument', () => {
-  beforeEach(() => vi.restoreAllMocks());
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it('sends a PATCH with an updateMask for each field and encoded values', async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true });
@@ -86,7 +92,9 @@ describe('patchDocument', () => {
 });
 
 describe('deleteDocument', () => {
-  beforeEach(() => vi.restoreAllMocks());
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it('sends a DELETE request', async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true });

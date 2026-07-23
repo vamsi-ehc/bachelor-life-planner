@@ -11,12 +11,12 @@ function arrayBufferToPem(buf: ArrayBuffer): string {
 }
 
 async function makeTestKeyPem(): Promise<string> {
-  const keyPair = await crypto.subtle.generateKey(
+  const keyPair = (await crypto.subtle.generateKey(
     { name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
     true,
     ['sign', 'verify'],
-  );
-  const exported = await crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
+  )) as CryptoKeyPair;
+  const exported = (await crypto.subtle.exportKey('pkcs8', keyPair.privateKey)) as ArrayBuffer;
   return arrayBufferToPem(exported);
 }
 

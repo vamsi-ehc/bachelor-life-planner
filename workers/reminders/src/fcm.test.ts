@@ -2,7 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { sendPush } from './fcm';
 
 describe('sendPush', () => {
-  beforeEach(() => vi.restoreAllMocks());
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it('posts a notification message to the FCM v1 endpoint', async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true });
