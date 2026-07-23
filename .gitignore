@@ -16,6 +16,10 @@ dist/
 # Local Firebase project pointer (developer-specific)
 .firebaserc
 
+# Service account keys (never committed)
+*firebase-adminsdk*.json
+*service-account*.json
+
 # IDE
 .vscode/
 .idea/
