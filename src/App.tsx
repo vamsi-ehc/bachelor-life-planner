@@ -12,6 +12,7 @@ import { GoalsScreen } from './domains/goals/GoalsScreen';
 import { SettingsScreen } from './domains/settings/SettingsScreen';
 import { InstallPrompt } from './pwa/InstallPrompt';
 import { UpdateToast } from './pwa/UpdateToast';
+import { NotificationPermission } from './notifications/NotificationPermission';
 
 function AuthedRoutes({ uid }: { uid: string }) {
   const navigate = useNavigate();
@@ -33,8 +34,9 @@ function AuthedRoutes({ uid }: { uid: string }) {
           Sign out
         </button>
       </header>
-      <div className="p-3">
+      <div className="p-3 flex flex-col gap-2">
         <InstallPrompt />
+        <NotificationPermission uid={uid} vapidKey={import.meta.env.VITE_FIREBASE_VAPID_KEY} />
       </div>
       <Routes>
         <Route path="/" element={<Dashboard uid={uid} onNavigate={navigate} />} />

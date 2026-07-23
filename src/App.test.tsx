@@ -30,6 +30,7 @@ vi.mock('./domains/settings/SettingsScreen', () => ({
 vi.mock('./firebase/config', () => ({ auth: {}, db: {} }));
 vi.mock('./pwa/InstallPrompt', () => ({ InstallPrompt: () => null }));
 vi.mock('./pwa/UpdateToast', () => ({ UpdateToast: () => null }));
+vi.mock('./notifications/NotificationPermission', () => ({ NotificationPermission: () => null }));
 
 import App from './App';
 
