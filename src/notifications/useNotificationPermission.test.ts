@@ -15,9 +15,10 @@ describe('useNotificationPermission', () => {
     mockSaveFcmToken.mockReset().mockResolvedValue(undefined);
   });
 
-  it('starts idle', () => {
+  it('starts idle with no error', () => {
     const { result } = renderHook(() => useNotificationPermission('user1', 'vapid-key'));
     expect(result.current.status).toBe('idle');
+    expect(result.current.error).toBeNull();
   });
 
   it('sets status to granted and saves the token on success', async () => {
@@ -43,5 +44,55 @@ describe('useNotificationPermission', () => {
 
     expect(mockSaveFcmToken).not.toHaveBeenCalled();
     await waitFor(() => expect(result.current.status).toBe('denied'));
+  });
+
+  it('sets error when requestPushToken fails', async () => {
+    const testError = new Error('Token request failed');
+    mockRequestPushToken.mockRejectedValue(testError);
+    const { result } = renderHook(() => useNotificationPermission('user1', 'vapid-key'));
+
+    await act(async () => {
+      await result.current.enable();
+    });
+
+    expect(mockSaveFcmToken).not.toHaveBeenCalled();
+    await waitFor(() => expect(result.current.error).toBe('Token request failed'));
+    expect(result.current.status).toBe('idle');
+  });
+
+  it('sets error when saveFcmToken fails', async () => {
+    mockRequestPushToken.mockResolvedValue('device-token');
+    const testError = new Error('Save failed');
+    mockSaveFcmToken.mockRejectedValue(testError);
+    const { result } = renderHook(() => useNotificationPermission('user1', 'vapid-key'));
+
+    await act(async () => {
+      await result.current.enable();
+    });
+
+    expect(mockRequestPushToken).toHaveBeenCalledWith('vapid-key');
+    await waitFor(() => expect(result.current.error).toBe('Save failed'));
+    expect(result.current.status).toBe('idle');
+  });
+
+  it('clears error when enable is called again', async () => {
+    mockRequestPushToken.mockRejectedValueOnce(new Error('First attempt failed'));
+    const { result } = renderHook(() => useNotificationPermission('user1', 'vapid-key'));
+
+    await act(async () => {
+      await result.current.enable();
+    });
+
+    await waitFor(() => expect(result.current.error).not.toBeNull());
+
+    mockRequestPushToken.mockResolvedValueOnce('device-token');
+    mockSaveFcmToken.mockResolvedValueOnce(undefined);
+
+    await act(async () => {
+      await result.current.enable();
+    });
+
+    await waitFor(() => expect(result.current.status).toBe('granted'));
+    expect(result.current.error).toBeNull();
   });
 });
