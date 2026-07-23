@@ -24,6 +24,9 @@ vi.mock('./domains/health/HealthScreen', () => ({
 vi.mock('./domains/goals/GoalsScreen', () => ({
   GoalsScreen: ({ uid }: { uid: string }) => <div>Goals for {uid}</div>,
 }));
+vi.mock('./domains/settings/SettingsScreen', () => ({
+  SettingsScreen: ({ uid }: { uid: string }) => <div>Settings for {uid}</div>,
+}));
 vi.mock('./firebase/config', () => ({ auth: {}, db: {} }));
 vi.mock('./pwa/InstallPrompt', () => ({ InstallPrompt: () => null }));
 vi.mock('./pwa/UpdateToast', () => ({ UpdateToast: () => null }));
