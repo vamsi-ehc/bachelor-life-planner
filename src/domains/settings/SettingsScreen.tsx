@@ -6,6 +6,7 @@ export function SettingsScreen({ uid }: { uid: string }) {
   const [config, setConfig] = useState<ReminderConfig | null>(null);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     getReminderConfig(uid)
@@ -16,8 +17,13 @@ export function SettingsScreen({ uid }: { uid: string }) {
   async function handleSave(e: FormEvent) {
     e.preventDefault();
     if (!config) return;
-    await saveReminderConfig(uid, config);
-    setSaved(true);
+    try {
+      await saveReminderConfig(uid, config);
+      setSaveError(null);
+      setSaved(true);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to save settings');
+    }
   }
 
   if (error) {
@@ -38,7 +44,11 @@ export function SettingsScreen({ uid }: { uid: string }) {
             id="workoutTime"
             type="time"
             value={config.workoutTime}
-            onChange={(e) => setConfig({ ...config, workoutTime: e.target.value })}
+            onChange={(e) => {
+              setConfig({ ...config, workoutTime: e.target.value });
+              setSaved(false);
+              setSaveError(null);
+            }}
             className="border rounded px-3 py-2"
           />
         </label>
@@ -48,7 +58,11 @@ export function SettingsScreen({ uid }: { uid: string }) {
             id="dinnerTime"
             type="time"
             value={config.dinnerTime}
-            onChange={(e) => setConfig({ ...config, dinnerTime: e.target.value })}
+            onChange={(e) => {
+              setConfig({ ...config, dinnerTime: e.target.value });
+              setSaved(false);
+              setSaveError(null);
+            }}
             className="border rounded px-3 py-2"
           />
         </label>
@@ -58,7 +72,11 @@ export function SettingsScreen({ uid }: { uid: string }) {
             id="learningTime"
             type="time"
             value={config.learningTime}
-            onChange={(e) => setConfig({ ...config, learningTime: e.target.value })}
+            onChange={(e) => {
+              setConfig({ ...config, learningTime: e.target.value });
+              setSaved(false);
+              setSaveError(null);
+            }}
             className="border rounded px-3 py-2"
           />
         </label>
@@ -68,7 +86,11 @@ export function SettingsScreen({ uid }: { uid: string }) {
             id="weeklyReviewTime"
             type="time"
             value={config.weeklyReviewTime}
-            onChange={(e) => setConfig({ ...config, weeklyReviewTime: e.target.value })}
+            onChange={(e) => {
+              setConfig({ ...config, weeklyReviewTime: e.target.value });
+              setSaved(false);
+              setSaveError(null);
+            }}
             className="border rounded px-3 py-2"
           />
         </label>
@@ -76,6 +98,7 @@ export function SettingsScreen({ uid }: { uid: string }) {
         <button type="submit" className="bg-blue-600 text-white rounded px-3 py-2 self-start">
           Save
         </button>
+        {saveError && <p className="text-sm text-red-700">{saveError}</p>}
         {saved && <p className="text-sm text-green-700">Saved.</p>}
       </form>
     </div>
