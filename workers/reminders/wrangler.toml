@@ -7,4 +7,4 @@ crons = ["*/15 * * * *"]
 
 [vars]
 FIREBASE_PROJECT_ID = "batch-bf034"
-FIREBASE_UID = "V9bxuu7Fa3dW5Ml3D9HA3o1J4nv1"
+FIREBASE_UID = "AI2qlNjJVncZMp9Iy0iRKZxHmzj1"
