@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { signInWithGoogle } from './useAuth';
 
-export function Login() {
+export function Login({ redirectError }: { redirectError?: string | null }) {
   const [error, setError] = useState<string | null>(null);
+  const displayedError = error ?? redirectError ?? null;
 
   async function handleClick() {
     setError(null);
@@ -16,7 +17,7 @@ export function Login() {
   return (
     <div className="flex flex-col gap-3 max-w-sm mx-auto mt-20 p-6 items-center">
       <h1 className="text-xl font-semibold">Punch In</h1>
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {displayedError && <p className="text-red-600 text-sm">{displayedError}</p>}
       <button
         type="button"
         onClick={handleClick}

@@ -56,14 +56,14 @@ function AuthedRoutes({ uid }: { uid: string }) {
 }
 
 export default function App() {
-  const { user, loading } = useAuth();
+  const { user, loading, redirectError } = useAuth();
 
   if (loading) {
     return <p className="p-6">Loading...</p>;
   }
 
   if (!user) {
-    return <Login />;
+    return <Login redirectError={redirectError} />;
   }
 
   return (
