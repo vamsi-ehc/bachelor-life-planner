@@ -49,7 +49,7 @@ export function SettingsScreen({ uid }: { uid: string }) {
   return (
     <div className="max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-6">
       <ScreenHeader label="Settings" />
-      <form onSubmit={handleSave} className="flex flex-col gap-4 max-w-sm">
+      <form id="settings-reminders" onSubmit={handleSave} className="flex flex-col gap-4 max-w-sm">
         <label className="flex flex-col text-sm" htmlFor="workoutTime">
           Workout reminder
           <input
@@ -114,7 +114,7 @@ export function SettingsScreen({ uid }: { uid: string }) {
         {saved && <p className="text-sm text-green-700">Saved.</p>}
       </form>
 
-      <section className="flex flex-col gap-2 max-w-sm">
+      <section id="settings-replay" className="flex flex-col gap-2 max-w-sm">
         <h2 className="font-semibold">Tutorials</h2>
         <button
           type="button"

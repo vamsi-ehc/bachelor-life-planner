@@ -48,8 +48,10 @@ export function WorkoutScreen({ uid }: { uid: string }) {
   return (
     <div className="max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-4">
       <ScreenHeader label="Workout" />
-      <PunchInButton done={completion?.workout ?? false} onToggle={handlePunchIn} />
-      <form onSubmit={handleAddEntry} className="flex flex-wrap gap-2">
+      <div id="workout-punchin">
+        <PunchInButton done={completion?.workout ?? false} onToggle={handlePunchIn} />
+      </div>
+      <form id="workout-form" onSubmit={handleAddEntry} className="flex flex-wrap gap-2">
         <input
           type="text"
           placeholder="Exercise"

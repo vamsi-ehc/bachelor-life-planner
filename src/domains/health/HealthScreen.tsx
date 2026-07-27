@@ -61,7 +61,7 @@ export function HealthScreen({ uid }: { uid: string }) {
     <div className="max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-6">
       <ScreenHeader label="Sleep & Health" />
 
-      <section className="flex flex-col gap-2">
+      <section id="health-sleep" className="flex flex-col gap-2">
         <h2 className="font-semibold">Sleep</h2>
         {duration !== null && <p className="text-sm text-gray-600">{duration}h slept</p>}
         <form onSubmit={handleSaveSleep} className="flex flex-wrap gap-2 items-end">
@@ -89,7 +89,7 @@ export function HealthScreen({ uid }: { uid: string }) {
         </form>
       </section>
 
-      <section className="flex flex-col gap-2">
+      <section id="health-weight" className="flex flex-col gap-2">
         <h2 className="font-semibold">Weight</h2>
         {weightChange !== null && (
           <p className="text-sm text-gray-600">

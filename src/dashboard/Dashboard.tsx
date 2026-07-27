@@ -154,7 +154,10 @@ export function Dashboard({ uid, onNavigate }: { uid: string; onNavigate: (path:
 
         <div className="lg:grid lg:grid-cols-2">
           <div className="lg:border-r lg:border-line">
-            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-4 sm:gap-5 px-4 sm:px-6 pt-6 pb-2 text-center sm:text-left">
+            <div
+              id="dashboard-rings"
+              className="flex flex-col sm:flex-row items-center sm:items-center gap-4 sm:gap-5 px-4 sm:px-6 pt-6 pb-2 text-center sm:text-left"
+            >
               <ActivityRings
                 segments={ringSegments}
                 className="w-[140px] h-[140px] sm:w-[150px] sm:h-[150px] lg:w-[170px] lg:h-[170px] flex-none"
@@ -162,14 +165,14 @@ export function Dashboard({ uid, onNavigate }: { uid: string; onNavigate: (path:
               <div className="flex-1">
                 <div className="font-display font-bold text-[38px] sm:text-[46px] leading-none">{dayHealth}%</div>
                 <div className="font-mono text-[10.5px] tracking-widest uppercase text-muted mt-1">Day health</div>
-                <div className="flex items-center justify-center sm:justify-start gap-1.5 mt-3 text-sm">
+                <div id="dashboard-streak" className="flex items-center justify-center sm:justify-start gap-1.5 mt-3 text-sm">
                   <span>🔥</span>
                   <span className="font-display font-semibold text-primary">{streak}-day streak</span>
                 </div>
               </div>
             </div>
 
-            <section className="px-4 sm:px-6 py-5">
+            <section id="dashboard-trend" className="px-4 sm:px-6 py-5">
               <p className="font-mono text-[10.5px] tracking-widest uppercase text-muted mb-3">
                 {trendValues.length}-day trend
               </p>
@@ -180,7 +183,7 @@ export function Dashboard({ uid, onNavigate }: { uid: string; onNavigate: (path:
           <div>
             <hr className="border-line lg:hidden" />
 
-            <section className="px-4 sm:px-6 py-5">
+            <section id="dashboard-heatmap" className="px-4 sm:px-6 py-5">
               <p className="font-mono text-[10.5px] tracking-widest uppercase text-muted mb-3">Consistency</p>
               <div className="overflow-x-auto">
                 <ConsistencyHeatmap points={healthHistory} />
@@ -197,7 +200,7 @@ export function Dashboard({ uid, onNavigate }: { uid: string; onNavigate: (path:
 
             <hr className="border-line" />
 
-            <section className="px-4 sm:px-6 py-5">
+            <section id="dashboard-domains" className="px-4 sm:px-6 py-5">
               <p className="font-mono text-[10.5px] tracking-widest uppercase text-muted mb-1">Domains</p>
               <ul>
                 {domains.map((d) => (
@@ -216,7 +219,7 @@ export function Dashboard({ uid, onNavigate }: { uid: string; onNavigate: (path:
               </ul>
             </section>
 
-            <section className="px-4 sm:px-6 pb-6">
+            <section id="dashboard-duenow" className="px-4 sm:px-6 pb-6">
               <p className="font-mono text-[10.5px] tracking-widest uppercase text-muted mb-3">Due now</p>
               <DueNowStrip items={dueItems} />
             </section>

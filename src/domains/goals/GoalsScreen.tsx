@@ -93,7 +93,7 @@ export function GoalsScreen({ uid }: { uid: string }) {
 
       <section className="flex flex-col gap-2">
         <h2 className="font-semibold">Goals</h2>
-        <ul className="flex flex-col gap-3">
+        <ul id="goals-list" className="flex flex-col gap-3">
           {goals.map((goal) => {
             const progress = computeMilestoneProgress(goal);
             return (
@@ -122,7 +122,7 @@ export function GoalsScreen({ uid }: { uid: string }) {
             );
           })}
         </ul>
-        <form onSubmit={handleAddGoal} className="flex flex-wrap gap-2">
+        <form id="goals-add" onSubmit={handleAddGoal} className="flex flex-wrap gap-2">
           <input
             type="text"
             placeholder="Goal title"
@@ -150,7 +150,7 @@ export function GoalsScreen({ uid }: { uid: string }) {
         </form>
       </section>
 
-      <section className="flex flex-col gap-2">
+      <section id="goals-review" className="flex flex-col gap-2">
         <h2 className="font-semibold">
           Weekly review {reviewDue && <span className="text-xs bg-amber-100 text-amber-800 rounded px-2 py-0.5">Due today</span>}
         </h2>

@@ -103,7 +103,7 @@ export function FinancesScreen({ uid }: { uid: string }) {
     <div className="max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-6">
       <ScreenHeader label="Finances" />
 
-      <section className="flex flex-col gap-2">
+      <section id="finances-transactions" className="flex flex-col gap-2">
         <h2 className="font-semibold">Add transaction</h2>
         <form onSubmit={handleAddTransaction} className="flex flex-wrap gap-2">
           <input
@@ -149,7 +149,7 @@ export function FinancesScreen({ uid }: { uid: string }) {
         </ul>
       </section>
 
-      <section className="flex flex-col gap-2">
+      <section id="finances-budgets" className="flex flex-col gap-2">
         <h2 className="font-semibold">Budgets</h2>
         <ul className="flex flex-col gap-2">
           {budgets.map((b) => {
@@ -194,7 +194,7 @@ export function FinancesScreen({ uid }: { uid: string }) {
         </form>
       </section>
 
-      <section className="flex flex-col gap-2">
+      <section id="finances-bills" className="flex flex-col gap-2">
         <h2 className="font-semibold">Bills</h2>
         <ul className="flex flex-col gap-1">
           {bills.map((bill) => (

@@ -24,7 +24,7 @@ export function TutorialStoryboard({
         setAnchorPosition(null);
         return;
       }
-      target.scrollIntoView({ block: 'center', behavior: 'auto' });
+      target.scrollIntoView?.({ block: 'center', behavior: 'auto' });
       const targetRect = target.getBoundingClientRect();
       const cardRect = cardRef.current?.getBoundingClientRect();
       const position = computeAnchoredPosition(
