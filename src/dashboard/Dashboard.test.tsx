@@ -7,6 +7,11 @@ vi.mock('./useDashboardData', () => ({
 }));
 vi.mock('../firebase/config', () => ({ db: {} }));
 
+const mockUseTutorial = vi.fn((..._args: [string, string]) => ({ isOpen: false, dismiss: vi.fn() }));
+vi.mock('../tutorials/useTutorial', () => ({
+  useTutorial: (...args: [string, string]) => mockUseTutorial(...args),
+}));
+
 import { Dashboard } from './Dashboard';
 
 describe('Dashboard', () => {
@@ -25,6 +30,7 @@ describe('Dashboard', () => {
       dueTodayChoreIds: [],
       streak: 3,
       dayHealth: 50,
+      healthHistory: [],
     });
     render(<Dashboard uid="user1" onNavigate={vi.fn()} />);
     expect(screen.getByText(/3/)).toBeInTheDocument();
@@ -52,6 +58,7 @@ describe('Dashboard', () => {
       dueTodayChoreIds: [],
       streak: 3,
       dayHealth: 50,
+      healthHistory: [],
     });
     const onNavigate = vi.fn();
     render(<Dashboard uid="user1" onNavigate={onNavigate} />);
@@ -76,6 +83,7 @@ describe('Dashboard', () => {
       dueTodayChoreIds: [],
       streak: 3,
       dayHealth: 50,
+      healthHistory: [],
     });
     const onNavigate = vi.fn();
     render(<Dashboard uid="user1" onNavigate={onNavigate} />);
@@ -100,6 +108,7 @@ describe('Dashboard', () => {
       dueTodayChoreIds: [],
       streak: 3,
       dayHealth: 50,
+      healthHistory: [],
     });
     const onNavigate = vi.fn();
     render(<Dashboard uid="user1" onNavigate={onNavigate} />);
@@ -124,6 +133,7 @@ describe('Dashboard', () => {
       dueTodayChoreIds: [],
       streak: 3,
       dayHealth: 50,
+      healthHistory: [],
     });
     render(<Dashboard uid="user1" onNavigate={vi.fn()} />);
     expect(screen.getByText('1 bill(s) due')).toBeInTheDocument();
@@ -144,6 +154,7 @@ describe('Dashboard', () => {
       dueTodayChoreIds: [],
       streak: 3,
       dayHealth: 50,
+      healthHistory: [],
     });
     render(<Dashboard uid="user1" onNavigate={vi.fn()} />);
     expect(screen.getByText('No bills due')).toBeInTheDocument();
@@ -167,6 +178,7 @@ describe('Dashboard', () => {
       dueTodayChoreIds: [],
       streak: 3,
       dayHealth: 50,
+      healthHistory: [],
     });
     render(<Dashboard uid="user1" onNavigate={vi.fn()} />);
     expect(screen.getByText('1 to buy')).toBeInTheDocument();
@@ -187,6 +199,7 @@ describe('Dashboard', () => {
       dueTodayChoreIds: [],
       streak: 0,
       dayHealth: 0,
+      healthHistory: [],
     });
     render(<Dashboard uid="user1" onNavigate={vi.fn()} />);
     expect(screen.getByText('Something went wrong: permission denied')).toBeInTheDocument();
@@ -211,6 +224,7 @@ describe('Dashboard', () => {
       dueTodayChoreIds: [],
       streak: 3,
       dayHealth: 100,
+      healthHistory: [],
     });
 
     render(<Dashboard uid="user1" onNavigate={vi.fn()} />);
@@ -246,8 +260,31 @@ describe('Dashboard', () => {
       dueTodayChoreIds: ['c1'],
       streak: 3,
       dayHealth: 100,
+      healthHistory: [],
     });
     render(<Dashboard uid="user1" onNavigate={vi.fn()} />);
-    expect(screen.getByText('1/1')).toBeInTheDocument();
+    expect(screen.getByText('1/1 done')).toBeInTheDocument();
+  });
+
+  it('shows the tutorial storyboard when useTutorial reports it is open', () => {
+    mockUseTutorial.mockReturnValueOnce({ isOpen: true, dismiss: vi.fn() });
+    mockUseDashboardData.mockReturnValue({
+      loading: false,
+      error: null,
+      completion: { date: '2026-07-20', workout: true, learning: false, chores: {} },
+      chores: [],
+      bills: [],
+      groceryItems: [],
+      sleepLog: null,
+      goals: [],
+      weeklyReview: null,
+      dueItems: [],
+      dueTodayChoreIds: [],
+      streak: 3,
+      dayHealth: 50,
+      healthHistory: [],
+    });
+    render(<Dashboard uid="user1" onNavigate={vi.fn()} />);
+    expect(mockUseTutorial).toHaveBeenCalledWith('user1', 'dashboard');
   });
 });
