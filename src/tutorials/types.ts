@@ -26,4 +26,5 @@ export type TutorialFlags = Record<TutorialScreenKey, boolean>;
 export interface TutorialStep {
   title: string;
   body: string;
+  targetId?: string;
 }
