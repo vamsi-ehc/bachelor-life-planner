@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 
 const mockListChores = vi.fn();
 const mockSaveChore = vi.fn().mockResolvedValue(undefined);
@@ -20,8 +21,19 @@ vi.mock('../shared/completionsApi', () => ({
   setChoreDone: (...args: [string, string, boolean]) => mockSetChoreDone(...args),
 }));
 vi.mock('../../firebase/config', () => ({ db: {} }));
+vi.mock('../../tutorials/useTutorial', () => ({
+  useTutorial: () => ({ isOpen: false, dismiss: vi.fn() }),
+}));
 
 import { ChoresScreen } from './ChoresScreen';
+
+function renderScreen() {
+  return render(
+    <MemoryRouter>
+      <ChoresScreen uid="user1" />
+    </MemoryRouter>
+  );
+}
 
 describe('ChoresScreen', () => {
   beforeEach(() => {
@@ -35,7 +47,7 @@ describe('ChoresScreen', () => {
     mockListChores.mockResolvedValue([{ id: 'c1', name: 'Dishes', cadence: 'daily' }]);
     mockGetCompletion.mockResolvedValue({ date: '2026-07-20', workout: false, learning: false, chores: {} });
 
-    render(<ChoresScreen uid="user1" />);
+    renderScreen();
 
     await waitFor(() => expect(screen.getByText('Dishes')).toBeInTheDocument());
 
@@ -49,7 +61,7 @@ describe('ChoresScreen', () => {
     mockListChores.mockResolvedValue([]);
     mockGetCompletion.mockResolvedValue({ date: '2026-07-20', workout: false, learning: false, chores: {} });
 
-    render(<ChoresScreen uid="user1" />);
+    renderScreen();
     await waitFor(() => expect(mockListChores).toHaveBeenCalled());
 
     const user = userEvent.setup();
@@ -66,7 +78,7 @@ describe('ChoresScreen', () => {
     mockListChores.mockRejectedValue(new Error('offline'));
     mockGetCompletion.mockResolvedValue({ date: '2026-07-20', workout: false, learning: false, chores: {} });
 
-    render(<ChoresScreen uid="user1" />);
+    renderScreen();
 
     await waitFor(() =>
       expect(screen.getByText('Something went wrong: offline')).toBeInTheDocument()

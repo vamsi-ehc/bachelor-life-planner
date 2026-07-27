@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 
 const mockListGoals = vi.fn();
 const mockSaveGoal = vi.fn().mockResolvedValue(undefined);
@@ -15,8 +16,19 @@ vi.mock('./weeklyReviewApi', () => ({
   getWeeklyReview: (...args: [string, string]) => mockGetWeeklyReview(...args),
   saveWeeklyReview: (...args: [string, unknown]) => mockSaveWeeklyReview(...args),
 }));
+vi.mock('../../tutorials/useTutorial', () => ({
+  useTutorial: () => ({ isOpen: false, dismiss: vi.fn() }),
+}));
 
 import { GoalsScreen } from './GoalsScreen';
+
+function renderScreen() {
+  return render(
+    <MemoryRouter>
+      <GoalsScreen uid="user1" />
+    </MemoryRouter>
+  );
+}
 
 describe('GoalsScreen', () => {
   beforeEach(() => {
@@ -30,7 +42,7 @@ describe('GoalsScreen', () => {
     mockListGoals.mockResolvedValue([]);
     mockGetWeeklyReview.mockResolvedValue(null);
 
-    render(<GoalsScreen uid="user1" />);
+    renderScreen();
     await waitFor(() => expect(mockListGoals).toHaveBeenCalled());
 
     const user = userEvent.setup();
@@ -65,7 +77,7 @@ describe('GoalsScreen', () => {
     ]);
     mockGetWeeklyReview.mockResolvedValue(null);
 
-    render(<GoalsScreen uid="user1" />);
+    renderScreen();
     await waitFor(() => expect(screen.getByText('Run 5k')).toBeInTheDocument());
 
     const user = userEvent.setup();
@@ -84,7 +96,7 @@ describe('GoalsScreen', () => {
     mockListGoals.mockResolvedValue([]);
     mockGetWeeklyReview.mockResolvedValue(null);
 
-    render(<GoalsScreen uid="user1" />);
+    renderScreen();
     await waitFor(() => expect(mockGetWeeklyReview).toHaveBeenCalled());
 
     const user = userEvent.setup();

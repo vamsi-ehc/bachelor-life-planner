@@ -4,11 +4,16 @@ import { getWeeklyReview, saveWeeklyReview } from './weeklyReviewApi';
 import { computeMilestoneProgress, isWeeklyReviewDue } from './goalsLogic';
 import { Goal, Milestone, WeeklyReview } from '../shared/types';
 import { todayId, dayOfWeek, weekId } from '../shared/dateUtils';
+import { ScreenHeader } from '../../components/ScreenHeader';
+import { useTutorial } from '../../tutorials/useTutorial';
+import { TutorialStoryboard } from '../../tutorials/TutorialStoryboard';
+import { tutorialContent } from '../../tutorials/tutorialContent';
 
 export function GoalsScreen({ uid }: { uid: string }) {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [review, setReview] = useState<WeeklyReview | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const tutorial = useTutorial(uid, 'goals');
 
   const [title, setTitle] = useState('');
   const [targetDate, setTargetDate] = useState('');
@@ -83,8 +88,8 @@ export function GoalsScreen({ uid }: { uid: string }) {
   const reviewDue = isWeeklyReviewDue(dow, review);
 
   return (
-    <div className="p-6 flex flex-col gap-6">
-      <h1 className="text-xl font-semibold">Goals &amp; Journaling</h1>
+    <div className="max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-6">
+      <ScreenHeader label="Goals & Journaling" />
 
       <section className="flex flex-col gap-2">
         <h2 className="font-semibold">Goals</h2>
@@ -173,6 +178,9 @@ export function GoalsScreen({ uid }: { uid: string }) {
           </button>
         </form>
       </section>
+      {tutorial.isOpen && (
+        <TutorialStoryboard title="Goals & Journaling" steps={tutorialContent.goals} onDismiss={tutorial.dismiss} />
+      )}
     </div>
   );
 }

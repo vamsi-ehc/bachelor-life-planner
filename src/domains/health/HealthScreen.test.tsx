@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 
 const mockGetSleepLog = vi.fn();
 const mockSaveSleepLog = vi.fn().mockResolvedValue(undefined);
@@ -15,8 +16,19 @@ vi.mock('./weightApi', () => ({
   listWeightEntries: (...args: [string]) => mockListWeightEntries(...args),
   addWeightEntry: (...args: [string, unknown]) => mockAddWeightEntry(...args),
 }));
+vi.mock('../../tutorials/useTutorial', () => ({
+  useTutorial: () => ({ isOpen: false, dismiss: vi.fn() }),
+}));
 
 import { HealthScreen } from './HealthScreen';
+
+function renderScreen() {
+  return render(
+    <MemoryRouter>
+      <HealthScreen uid="user1" />
+    </MemoryRouter>
+  );
+}
 
 describe('HealthScreen', () => {
   beforeEach(() => {
@@ -30,7 +42,7 @@ describe('HealthScreen', () => {
     mockGetSleepLog.mockResolvedValue({ date: '2026-07-20', bedtime: '', wakeTime: '' });
     mockListWeightEntries.mockResolvedValue([]);
 
-    render(<HealthScreen uid="user1" />);
+    renderScreen();
     await waitFor(() => expect(mockGetSleepLog).toHaveBeenCalled());
 
     const user = userEvent.setup();
@@ -48,7 +60,7 @@ describe('HealthScreen', () => {
     mockGetSleepLog.mockResolvedValue({ date: '2026-07-20', bedtime: '23:00', wakeTime: '07:00' });
     mockListWeightEntries.mockResolvedValue([]);
 
-    render(<HealthScreen uid="user1" />);
+    renderScreen();
 
     await waitFor(() => expect(screen.getByText('8h slept')).toBeInTheDocument());
   });
@@ -57,7 +69,7 @@ describe('HealthScreen', () => {
     mockGetSleepLog.mockResolvedValue({ date: '2026-07-20', bedtime: '', wakeTime: '' });
     mockListWeightEntries.mockResolvedValue([]);
 
-    render(<HealthScreen uid="user1" />);
+    renderScreen();
     await waitFor(() => expect(mockListWeightEntries).toHaveBeenCalled());
 
     const user = userEvent.setup();

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 
 const mockListTransactions = vi.fn();
 const mockAddTransaction = vi.fn().mockResolvedValue('tx1');
@@ -26,8 +27,19 @@ vi.mock('./billsApi', async () => {
     saveBill: (...args: [string, unknown]) => mockSaveBill(...args),
   };
 });
+vi.mock('../../tutorials/useTutorial', () => ({
+  useTutorial: () => ({ isOpen: false, dismiss: vi.fn() }),
+}));
 
 import { FinancesScreen } from './FinancesScreen';
+
+function renderScreen() {
+  return render(
+    <MemoryRouter>
+      <FinancesScreen uid="user1" />
+    </MemoryRouter>
+  );
+}
 
 describe('FinancesScreen', () => {
   beforeEach(() => {
@@ -44,7 +56,7 @@ describe('FinancesScreen', () => {
     mockListBudgets.mockResolvedValue([]);
     mockListBills.mockResolvedValue([]);
 
-    render(<FinancesScreen uid="user1" />);
+    renderScreen();
     await waitFor(() => expect(mockListTransactions).toHaveBeenCalled());
 
     const user = userEvent.setup();
@@ -65,7 +77,7 @@ describe('FinancesScreen', () => {
     mockListBudgets.mockResolvedValue([{ category: 'Groceries', monthlyLimit: 200 }]);
     mockListBills.mockResolvedValue([]);
 
-    render(<FinancesScreen uid="user1" />);
+    renderScreen();
 
     await waitFor(() => expect(screen.getByText('$50.00 / $200.00')).toBeInTheDocument());
   });
@@ -77,7 +89,7 @@ describe('FinancesScreen', () => {
       { id: 'b1', name: 'Rent', amount: 1200, dueDay: new Date().getDate(), category: 'Housing' },
     ]);
 
-    render(<FinancesScreen uid="user1" />);
+    renderScreen();
 
     await waitFor(() => expect(screen.getByText('Due today')).toBeInTheDocument());
   });

@@ -4,6 +4,10 @@ import { listWorkoutLogEntries, addWorkoutLogEntry } from './workoutApi';
 import { WorkoutLogEntry, DailyCompletion } from '../shared/types';
 import { todayId } from '../shared/dateUtils';
 import { PunchInButton } from '../../components/PunchInButton';
+import { ScreenHeader } from '../../components/ScreenHeader';
+import { useTutorial } from '../../tutorials/useTutorial';
+import { TutorialStoryboard } from '../../tutorials/TutorialStoryboard';
+import { tutorialContent } from '../../tutorials/tutorialContent';
 
 export function WorkoutScreen({ uid }: { uid: string }) {
   const [completion, setCompletion] = useState<DailyCompletion | null>(null);
@@ -11,6 +15,7 @@ export function WorkoutScreen({ uid }: { uid: string }) {
   const [exercise, setExercise] = useState('');
   const [detail, setDetail] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const tutorial = useTutorial(uid, 'workout');
 
   useEffect(() => {
     const handleError = (err: unknown) => {
@@ -41,10 +46,10 @@ export function WorkoutScreen({ uid }: { uid: string }) {
   }
 
   return (
-    <div className="p-6 flex flex-col gap-4">
-      <h1 className="text-xl font-semibold">Workout</h1>
+    <div className="max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-4">
+      <ScreenHeader label="Workout" />
       <PunchInButton done={completion?.workout ?? false} onToggle={handlePunchIn} />
-      <form onSubmit={handleAddEntry} className="flex gap-2">
+      <form onSubmit={handleAddEntry} className="flex flex-wrap gap-2">
         <input
           type="text"
           placeholder="Exercise"
@@ -70,6 +75,9 @@ export function WorkoutScreen({ uid }: { uid: string }) {
           </li>
         ))}
       </ul>
+      {tutorial.isOpen && (
+        <TutorialStoryboard title="Workout" steps={tutorialContent.workout} onDismiss={tutorial.dismiss} />
+      )}
     </div>
   );
 }

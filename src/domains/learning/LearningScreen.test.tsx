@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 
 const mockGetCompletion = vi.fn();
 const mockSetLearningDone = vi.fn().mockResolvedValue(undefined);
@@ -15,8 +16,19 @@ vi.mock('./learningApi', () => ({
   listLearningLogEntries: (...args: [string]) => mockListEntries(...args),
   addLearningLogEntry: (...args: [string, unknown]) => mockAddEntry(...args),
 }));
+vi.mock('../../tutorials/useTutorial', () => ({
+  useTutorial: () => ({ isOpen: false, dismiss: vi.fn() }),
+}));
 
 import { LearningScreen } from './LearningScreen';
+
+function renderScreen() {
+  return render(
+    <MemoryRouter>
+      <LearningScreen uid="user1" />
+    </MemoryRouter>
+  );
+}
 
 describe('LearningScreen', () => {
   beforeEach(() => {
@@ -30,7 +42,7 @@ describe('LearningScreen', () => {
     mockGetCompletion.mockResolvedValue({ date: '2026-07-20', workout: false, learning: false, chores: {} });
     mockListEntries.mockResolvedValue([]);
 
-    render(<LearningScreen uid="user1" />);
+    renderScreen();
     await waitFor(() => expect(screen.getByRole('button', { name: 'Punch In' })).toBeInTheDocument());
 
     const user = userEvent.setup();
@@ -43,7 +55,7 @@ describe('LearningScreen', () => {
     mockGetCompletion.mockResolvedValue({ date: '2026-07-20', workout: false, learning: false, chores: {} });
     mockListEntries.mockResolvedValue([]);
 
-    render(<LearningScreen uid="user1" />);
+    renderScreen();
     await waitFor(() => expect(mockListEntries).toHaveBeenCalled());
 
     const user = userEvent.setup();
@@ -57,7 +69,7 @@ describe('LearningScreen', () => {
     mockGetCompletion.mockRejectedValue(new Error('offline'));
     mockListEntries.mockResolvedValue([]);
 
-    render(<LearningScreen uid="user1" />);
+    renderScreen();
 
     await waitFor(() =>
       expect(screen.getByText('Something went wrong: offline')).toBeInTheDocument()

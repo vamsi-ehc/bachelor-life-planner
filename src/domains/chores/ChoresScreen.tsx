@@ -3,12 +3,17 @@ import { listChores, saveChore, isChoreDueToday } from './choresApi';
 import { getCompletion, setChoreDone } from '../shared/completionsApi';
 import { ChoreConfig, DailyCompletion } from '../shared/types';
 import { dayOfWeek, todayId } from '../shared/dateUtils';
+import { ScreenHeader } from '../../components/ScreenHeader';
+import { useTutorial } from '../../tutorials/useTutorial';
+import { TutorialStoryboard } from '../../tutorials/TutorialStoryboard';
+import { tutorialContent } from '../../tutorials/tutorialContent';
 
 export function ChoresScreen({ uid }: { uid: string }) {
   const [chores, setChores] = useState<ChoreConfig[]>([]);
   const [completion, setCompletion] = useState<DailyCompletion | null>(null);
   const [newChoreName, setNewChoreName] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const tutorial = useTutorial(uid, 'chores');
 
   useEffect(() => {
     const handleError = (err: unknown) => {
@@ -45,8 +50,8 @@ export function ChoresScreen({ uid }: { uid: string }) {
   }
 
   return (
-    <div className="p-6 flex flex-col gap-4">
-      <h1 className="text-xl font-semibold">Chores</h1>
+    <div className="max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-4">
+      <ScreenHeader label="Chores" />
       <ul className="flex flex-col gap-2">
         {chores.map((chore) => {
           const dueToday = isChoreDueToday(chore, dow);
@@ -66,7 +71,7 @@ export function ChoresScreen({ uid }: { uid: string }) {
           );
         })}
       </ul>
-      <form onSubmit={handleAddChore} className="flex gap-2">
+      <form onSubmit={handleAddChore} className="flex flex-wrap gap-2">
         <input
           type="text"
           placeholder="New chore name"
@@ -78,6 +83,9 @@ export function ChoresScreen({ uid }: { uid: string }) {
           Add chore
         </button>
       </form>
+      {tutorial.isOpen && (
+        <TutorialStoryboard title="Chores" steps={tutorialContent.chores} onDismiss={tutorial.dismiss} />
+      )}
     </div>
   );
 }

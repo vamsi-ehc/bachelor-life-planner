@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 
 const mockListItems = vi.fn();
 const mockAddItem = vi.fn().mockResolvedValue('g1');
@@ -17,8 +18,19 @@ vi.mock('./mealLogApi', () => ({
   getMealLog: (...args: [string]) => mockGetMealLog(...args),
   addMealEntry: (...args: [string, string]) => mockAddMealEntry(...args),
 }));
+vi.mock('../../tutorials/useTutorial', () => ({
+  useTutorial: () => ({ isOpen: false, dismiss: vi.fn() }),
+}));
 
 import { MealsScreen } from './MealsScreen';
+
+function renderScreen() {
+  return render(
+    <MemoryRouter>
+      <MealsScreen uid="user1" />
+    </MemoryRouter>
+  );
+}
 
 describe('MealsScreen', () => {
   beforeEach(() => {
@@ -33,7 +45,7 @@ describe('MealsScreen', () => {
     mockListItems.mockResolvedValue([{ id: 'g1', name: 'Milk', checked: false }]);
     mockGetMealLog.mockResolvedValue({ date: '2026-07-20', entries: [] });
 
-    render(<MealsScreen uid="user1" />);
+    renderScreen();
     await waitFor(() => expect(screen.getByText('Milk')).toBeInTheDocument());
 
     const user = userEvent.setup();
@@ -46,7 +58,7 @@ describe('MealsScreen', () => {
     mockListItems.mockResolvedValue([]);
     mockGetMealLog.mockResolvedValue({ date: '2026-07-20', entries: [] });
 
-    render(<MealsScreen uid="user1" />);
+    renderScreen();
     await waitFor(() => expect(mockListItems).toHaveBeenCalled());
 
     const user = userEvent.setup();
@@ -60,7 +72,7 @@ describe('MealsScreen', () => {
     mockListItems.mockResolvedValue([]);
     mockGetMealLog.mockResolvedValue({ date: '2026-07-20', entries: [] });
 
-    render(<MealsScreen uid="user1" />);
+    renderScreen();
     await waitFor(() => expect(mockGetMealLog).toHaveBeenCalled());
 
     const user = userEvent.setup();

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 
 const mockGetCompletion = vi.fn();
 const mockSetWorkoutDone = vi.fn().mockResolvedValue(undefined);
@@ -15,8 +16,19 @@ vi.mock('./workoutApi', () => ({
   listWorkoutLogEntries: (...args: [string]) => mockListEntries(...args),
   addWorkoutLogEntry: (...args: [string, unknown]) => mockAddEntry(...args),
 }));
+vi.mock('../../tutorials/useTutorial', () => ({
+  useTutorial: () => ({ isOpen: false, dismiss: vi.fn() }),
+}));
 
 import { WorkoutScreen } from './WorkoutScreen';
+
+function renderScreen() {
+  return render(
+    <MemoryRouter>
+      <WorkoutScreen uid="user1" />
+    </MemoryRouter>
+  );
+}
 
 describe('WorkoutScreen', () => {
   beforeEach(() => {
@@ -30,7 +42,7 @@ describe('WorkoutScreen', () => {
     mockGetCompletion.mockResolvedValue({ date: '2026-07-20', workout: false, learning: false, chores: {} });
     mockListEntries.mockResolvedValue([]);
 
-    render(<WorkoutScreen uid="user1" />);
+    renderScreen();
     await waitFor(() => expect(screen.getByRole('button', { name: 'Punch In' })).toBeInTheDocument());
 
     const user = userEvent.setup();
@@ -43,7 +55,7 @@ describe('WorkoutScreen', () => {
     mockGetCompletion.mockResolvedValue({ date: '2026-07-20', workout: false, learning: false, chores: {} });
     mockListEntries.mockResolvedValue([]);
 
-    render(<WorkoutScreen uid="user1" />);
+    renderScreen();
     await waitFor(() => expect(mockListEntries).toHaveBeenCalled());
 
     const user = userEvent.setup();
@@ -61,7 +73,7 @@ describe('WorkoutScreen', () => {
     mockGetCompletion.mockRejectedValue(new Error('offline'));
     mockListEntries.mockResolvedValue([]);
 
-    render(<WorkoutScreen uid="user1" />);
+    renderScreen();
 
     await waitFor(() =>
       expect(screen.getByText('Something went wrong: offline')).toBeInTheDocument()
