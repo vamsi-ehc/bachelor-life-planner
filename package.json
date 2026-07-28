@@ -8,10 +8,13 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "generate-icons": "node scripts/generate-icons.js"
+    "generate-icons": "node scripts/generate-icons.js",
+    "deploy:firebase": "npm run build && firebase deploy --only hosting --project batch-bf034",
+    "deploy:cloudflare": "npm run build && wrangler pages deploy dist --project-name punch-in"
   },
   "dependencies": {
     "firebase": "^10.7.2",
+    "gsap": "^3.15.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.21.0"
