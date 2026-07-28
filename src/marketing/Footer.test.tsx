@@ -10,12 +10,13 @@ describe('Footer', () => {
         <Footer />
       </MemoryRouter>
     );
+    expect(screen.getByRole('link', { name: /^punch in$/i })).toHaveAttribute('href', '/');
     expect(screen.getByRole('link', { name: /privacy/i })).toHaveAttribute('href', '/privacy');
     expect(screen.getByRole('link', { name: /terms/i })).toHaveAttribute('href', '/terms');
     expect(screen.getByRole('link', { name: /contact/i })).toHaveAttribute(
       'href',
       'mailto:konathalavamsi123@gmail.com'
     );
-    expect(screen.getByText(/Punch In/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Punch In/).length).toBeGreaterThan(0);
   });
 });

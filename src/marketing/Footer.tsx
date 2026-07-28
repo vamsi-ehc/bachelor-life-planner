@@ -6,6 +6,9 @@ export function Footer() {
     <footer className="border-t border-line px-4 sm:px-6 xl:px-10 py-6 flex flex-col sm:flex-row gap-3 sm:gap-6 sm:items-center justify-between font-mono text-xs text-muted">
       <div>&copy; {year} Punch In. All rights reserved.</div>
       <nav className="flex gap-4">
+        <Link to="/" className="hover:text-ink">
+          Punch In
+        </Link>
         <Link to="/privacy" className="hover:text-ink">
           Privacy
         </Link>

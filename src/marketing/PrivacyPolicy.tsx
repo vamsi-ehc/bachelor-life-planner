@@ -41,9 +41,9 @@ export function PrivacyPolicy() {
       <section>
         <h2 className="font-display font-semibold text-lg">Third parties</h2>
         <p className="mt-2 text-sm text-muted leading-relaxed">
-          We use Firebase and Google Cloud as our infrastructure and authentication processor. If configured,
-          we may use tracking services to understand aggregate usage. We do not use ad networks, and we never
-          sell your data to anyone.
+          We use Firebase and Google Cloud as our infrastructure and authentication processor. If configured, we
+          use Google Analytics (GA4) to understand aggregate usage — only after you accept the cookie banner
+          shown on your first visit. We do not use ad networks, and we never sell your data to anyone.
         </p>
       </section>
 
