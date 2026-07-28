@@ -12,7 +12,11 @@ export function PrivacyPolicy() {
         <h2 className="font-display font-semibold text-lg">Who runs this</h2>
         <p className="mt-2 text-sm text-muted leading-relaxed">
           Punch In is built and operated by an individual developer, not a registered company. If you have
-          questions about this policy or your data, please get in touch.
+          questions about this policy or your data, contact{' '}
+          <a href="mailto:konathalavamsi123@gmail.com" className="text-primary underline">
+            konathalavamsi123@gmail.com
+          </a>
+          .
         </p>
       </section>
 
@@ -46,9 +50,9 @@ export function PrivacyPolicy() {
       <section>
         <h2 className="font-display font-semibold text-lg">Security</h2>
         <p className="mt-2 text-sm text-muted leading-relaxed">
-          Every read and write is restricted to the authenticated owner of that data — no other account can
-          access your entries. All traffic is served over HTTPS. Because sign-in uses Google OAuth, this app
-          never sees or stores your password.
+          Cloud Firestore security rules restrict every read and write to the authenticated owner of that
+          data — no other account can access your entries. All traffic is served over HTTPS. Because sign-in
+          uses Google OAuth, this app never sees or stores your password.
         </p>
         <p className="mt-2 text-sm text-muted leading-relaxed">
           Punch In does not currently hold formal certifications such as SOC 2, HIPAA, or ISO 27001. Despite
