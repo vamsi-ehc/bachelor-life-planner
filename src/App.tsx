@@ -1,6 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, signOutUser } from './auth/useAuth';
-import { Login } from './auth/Login';
 import { Dashboard } from './dashboard/Dashboard';
 import { WorkoutScreen } from './domains/workout/WorkoutScreen';
 import { LearningScreen } from './domains/learning/LearningScreen';
@@ -13,62 +13,90 @@ import { SettingsScreen } from './domains/settings/SettingsScreen';
 import { InstallPrompt } from './pwa/InstallPrompt';
 import { UpdateToast } from './pwa/UpdateToast';
 import { NotificationPermission } from './notifications/NotificationPermission';
+import { Sidebar } from './components/Sidebar';
+import { Home } from './marketing/Home';
+import { PrivacyPolicy } from './marketing/PrivacyPolicy';
+import { TermsOfService } from './marketing/TermsOfService';
+import { ConsentBanner } from './marketing/ConsentBanner';
+import { trackPageview } from './analytics/ga';
+
+function PageviewTracker() {
+  const location = useLocation();
+  useEffect(() => {
+    trackPageview(location.pathname);
+  }, [location.pathname]);
+  return null;
+}
 
 function AuthedRoutes({ uid }: { uid: string }) {
   const navigate = useNavigate();
   return (
-    <>
-      <header className="p-3 flex justify-end gap-2 border-b">
-        <button
-          type="button"
-          onClick={() => navigate('/settings')}
-          className="text-sm text-gray-600 border rounded px-3 py-1"
-        >
-          Settings
-        </button>
-        <button
-          type="button"
-          onClick={() => signOutUser()}
-          className="text-sm text-gray-600 border rounded px-3 py-1"
-        >
-          Sign out
-        </button>
-      </header>
-      <div className="p-3 flex flex-col gap-2">
-        <InstallPrompt />
-        <NotificationPermission uid={uid} vapidKey={import.meta.env.VITE_FIREBASE_VAPID_KEY} />
+    <div className="lg:flex lg:min-h-screen">
+      <Sidebar onSignOut={() => signOutUser()} />
+      <div className="flex-1 min-w-0">
+        <header className="lg:hidden p-3 sm:px-6 flex justify-end gap-2 border-b border-line bg-card">
+          <button
+            type="button"
+            onClick={() => navigate('/settings')}
+            className="font-mono text-xs text-muted border border-line rounded-full px-3 py-1.5 hover:text-ink"
+          >
+            Settings
+          </button>
+          <button
+            type="button"
+            onClick={() => signOutUser()}
+            className="font-mono text-xs text-muted border border-line rounded-full px-3 py-1.5 hover:text-ink"
+          >
+            Sign out
+          </button>
+        </header>
+        <div className="max-w-3xl mx-auto w-full p-3 sm:px-6 flex flex-col gap-2">
+          <InstallPrompt />
+          <NotificationPermission uid={uid} vapidKey={import.meta.env.VITE_FIREBASE_VAPID_KEY} />
+        </div>
+        <Routes>
+          <Route path="/" element={<Dashboard uid={uid} onNavigate={navigate} />} />
+          <Route path="/workout" element={<WorkoutScreen uid={uid} />} />
+          <Route path="/learning" element={<LearningScreen uid={uid} />} />
+          <Route path="/chores" element={<ChoresScreen uid={uid} />} />
+          <Route path="/finances" element={<FinancesScreen uid={uid} />} />
+          <Route path="/meals" element={<MealsScreen uid={uid} />} />
+          <Route path="/health" element={<HealthScreen uid={uid} />} />
+          <Route path="/goals" element={<GoalsScreen uid={uid} />} />
+          <Route path="/settings" element={<SettingsScreen uid={uid} />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+        <UpdateToast />
       </div>
-      <Routes>
-        <Route path="/" element={<Dashboard uid={uid} onNavigate={navigate} />} />
-        <Route path="/workout" element={<WorkoutScreen uid={uid} />} />
-        <Route path="/learning" element={<LearningScreen uid={uid} />} />
-        <Route path="/chores" element={<ChoresScreen uid={uid} />} />
-        <Route path="/finances" element={<FinancesScreen uid={uid} />} />
-        <Route path="/meals" element={<MealsScreen uid={uid} />} />
-        <Route path="/health" element={<HealthScreen uid={uid} />} />
-        <Route path="/goals" element={<GoalsScreen uid={uid} />} />
-        <Route path="/settings" element={<SettingsScreen uid={uid} />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-      <UpdateToast />
-    </>
+    </div>
+  );
+}
+
+function SignedOutRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<TermsOfService />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 
 export default function App() {
-  const { user, loading, redirectError } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return <p className="p-6">Loading...</p>;
   }
 
-  if (!user) {
-    return <Login redirectError={redirectError} />;
-  }
-
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <AuthedRoutes uid={user.uid} />
+      <PageviewTracker />
+      <ConsentBanner />
+      {user ? <AuthedRoutes uid={user.uid} /> : <SignedOutRoutes />}
     </BrowserRouter>
   );
 }

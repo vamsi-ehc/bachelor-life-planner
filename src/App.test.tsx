@@ -8,7 +8,11 @@ vi.mock('./auth/useAuth', () => ({
   useAuth: () => mockUseAuth(),
   signOutUser: (...args: unknown[]) => mockSignOutUser(...args),
 }));
-vi.mock('./auth/Login', () => ({ Login: () => <div>Login screen</div> }));
+vi.mock('./marketing/Home', () => ({ Home: () => <div>Home screen</div> }));
+vi.mock('./marketing/PrivacyPolicy', () => ({ PrivacyPolicy: () => <div>Privacy screen</div> }));
+vi.mock('./marketing/TermsOfService', () => ({ TermsOfService: () => <div>Terms screen</div> }));
+vi.mock('./marketing/ConsentBanner', () => ({ ConsentBanner: () => null }));
+vi.mock('./analytics/ga', () => ({ trackPageview: vi.fn() }));
 vi.mock('./dashboard/Dashboard', () => ({
   Dashboard: ({ uid }: { uid: string }) => <div>Dashboard for {uid}</div>,
 }));
@@ -45,10 +49,31 @@ describe('App', () => {
     expect(screen.getByText('Loading...')).toBeInTheDocument();
   });
 
-  it('shows the Login screen when signed out', () => {
+  it('shows the Home marketing page at / when signed out', () => {
     mockUseAuth.mockReturnValue({ user: null, loading: false });
     render(<App />);
-    expect(screen.getByText('Login screen')).toBeInTheDocument();
+    expect(screen.getByText('Home screen')).toBeInTheDocument();
+  });
+
+  it('shows the Privacy page at /privacy when signed out', () => {
+    mockUseAuth.mockReturnValue({ user: null, loading: false });
+    window.history.pushState({}, '', '/privacy');
+    render(<App />);
+    expect(screen.getByText('Privacy screen')).toBeInTheDocument();
+  });
+
+  it('shows the Terms page at /terms when signed out', () => {
+    mockUseAuth.mockReturnValue({ user: null, loading: false });
+    window.history.pushState({}, '', '/terms');
+    render(<App />);
+    expect(screen.getByText('Terms screen')).toBeInTheDocument();
+  });
+
+  it('shows the Privacy page at /privacy when signed in too', () => {
+    mockUseAuth.mockReturnValue({ user: { uid: 'user1' }, loading: false });
+    window.history.pushState({}, '', '/privacy');
+    render(<App />);
+    expect(screen.getByText('Privacy screen')).toBeInTheDocument();
   });
 
   it('shows the Dashboard when signed in', () => {
@@ -62,7 +87,8 @@ describe('App', () => {
     render(<App />);
 
     const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: 'Sign out' }));
+    const [signOutButton] = screen.getAllByRole('button', { name: 'Sign out' });
+    await user.click(signOutButton);
 
     expect(mockSignOutUser).toHaveBeenCalled();
   });
