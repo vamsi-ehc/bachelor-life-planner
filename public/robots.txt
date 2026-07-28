@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://punch-in.example.com/sitemap.xml
