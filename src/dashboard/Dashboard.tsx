@@ -142,7 +142,7 @@ export function Dashboard({ uid, onNavigate }: { uid: string; onNavigate: (path:
 
   return (
     <div className="flex justify-center px-3 sm:px-6 py-4 sm:py-8">
-      <div className="w-full max-w-xl md:max-w-2xl lg:max-w-4xl bg-card border border-line rounded-2xl shadow-[0_30px_60px_-34px_rgba(21,24,26,0.28)] overflow-hidden">
+      <div className="w-full max-w-xl md:max-w-2xl lg:max-w-4xl xl:max-w-5xl bg-card border border-line rounded-2xl shadow-[0_30px_60px_-34px_rgba(21,24,26,0.28)] overflow-hidden">
         <header className="flex items-center justify-between px-4 sm:px-6 py-5 border-b border-line">
           <div className="font-display font-bold text-lg tracking-tight">
             Punch<span className="text-primary">·</span>In

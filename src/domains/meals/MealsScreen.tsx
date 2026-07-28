@@ -3,6 +3,8 @@ import { listGroceryItems, addGroceryItem, setGroceryItemChecked } from './groce
 import { getMealLog, addMealEntry } from './mealLogApi';
 import { GroceryItem, MealLog } from '../shared/types';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { PageCard } from '../../components/PageCard';
+import { fieldClass, buttonClass, sectionLabelClass } from '../../components/ui';
 import { useTutorial } from '../../tutorials/useTutorial';
 import { TutorialStoryboard } from '../../tutorials/TutorialStoryboard';
 import { tutorialContent } from '../../tutorials/tutorialContent';
@@ -46,25 +48,30 @@ export function MealsScreen({ uid }: { uid: string }) {
   }
 
   if (error) {
-    return <p className="p-6">Something went wrong: {error}</p>;
+    return (
+      <PageCard>
+        <p className="text-sm text-[#B3261E]">Something went wrong: {error}</p>
+      </PageCard>
+    );
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-6">
+    <PageCard>
       <ScreenHeader label="Meals & Groceries" />
 
-      <section id="meals-grocery" className="flex flex-col gap-2">
-        <h2 className="font-semibold">Grocery list</h2>
+      <section id="meals-grocery" className="flex flex-col gap-3">
+        <p className={sectionLabelClass}>Grocery list</p>
         <ul className="flex flex-col gap-2">
           {groceryItems.map((item) => (
-            <li key={item.id} className="flex items-center gap-2">
+            <li key={item.id} className="flex items-center gap-2.5 border-b border-line last:border-b-0 pb-2">
               <input
                 type="checkbox"
                 aria-label={item.name}
                 checked={item.checked}
                 onChange={(e) => handleToggleItem(item.id, e.target.checked)}
+                className="accent-primary w-4 h-4"
               />
-              <span className={item.checked ? 'line-through text-gray-400' : ''}>{item.name}</span>
+              <span className={`text-sm ${item.checked ? 'line-through text-muted' : ''}`}>{item.name}</span>
             </li>
           ))}
         </ul>
@@ -74,19 +81,21 @@ export function MealsScreen({ uid }: { uid: string }) {
             placeholder="New grocery item"
             value={newItemName}
             onChange={(e) => setNewItemName(e.target.value)}
-            className="border rounded px-3 py-2"
+            className={`${fieldClass} flex-1`}
           />
-          <button type="submit" className="bg-blue-600 text-white rounded px-3 py-2">
+          <button type="submit" className={buttonClass}>
             Add item
           </button>
         </form>
       </section>
 
-      <section id="meals-log" className="flex flex-col gap-2">
-        <h2 className="font-semibold">Today's meals</h2>
-        <ul className="flex flex-col gap-1">
+      <hr className="border-line" />
+
+      <section id="meals-log" className="flex flex-col gap-3">
+        <p className={sectionLabelClass}>Today's meals</p>
+        <ul className="flex flex-col gap-1.5">
           {mealLog?.entries.map((entry, i) => (
-            <li key={i} className="text-sm">
+            <li key={i} className="text-sm border-b border-line last:border-b-0 pb-1.5">
               {entry}
             </li>
           ))}
@@ -97,9 +106,9 @@ export function MealsScreen({ uid }: { uid: string }) {
             placeholder="What did you eat?"
             value={newMealEntry}
             onChange={(e) => setNewMealEntry(e.target.value)}
-            className="border rounded px-3 py-2 flex-1"
+            className={`${fieldClass} flex-1`}
           />
-          <button type="submit" className="bg-blue-600 text-white rounded px-3 py-2">
+          <button type="submit" className={buttonClass}>
             Add entry
           </button>
         </form>
@@ -107,6 +116,6 @@ export function MealsScreen({ uid }: { uid: string }) {
       {tutorial.isOpen && (
         <TutorialStoryboard title="Meals & Groceries" steps={tutorialContent.meals} onDismiss={tutorial.dismiss} />
       )}
-    </div>
+    </PageCard>
   );
 }

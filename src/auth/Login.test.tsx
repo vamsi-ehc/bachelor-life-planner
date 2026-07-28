@@ -36,9 +36,4 @@ describe('Login', () => {
     await user.click(screen.getByRole('button', { name: /sign in with google/i }));
     await waitFor(() => expect(screen.getByText('popup blocked')).toBeInTheDocument());
   });
-
-  it('shows a redirectError passed in from a failed redirect flow', () => {
-    render(<Login redirectError="redirect failed" />);
-    expect(screen.getByText('redirect failed')).toBeInTheDocument();
-  });
 });

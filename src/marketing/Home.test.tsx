@@ -1,5 +1,5 @@
 // src/marketing/Home.test.tsx
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
@@ -25,7 +25,7 @@ describe('Home', () => {
     expect(screen.getByText(/get started/i)).toBeInTheDocument();
     expect(screen.getByText(/sign in with google/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /read.*privacy/i })).toHaveAttribute('href', '/privacy');
-    expect(screen.getByRole('link', { name: /read.*privacy/i, exact: false })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Privacy' })).toHaveAttribute('href', '/privacy');
     expect(screen.getByText('Login screen')).toBeInTheDocument();
   });
 });

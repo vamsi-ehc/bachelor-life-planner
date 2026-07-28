@@ -5,6 +5,8 @@ import { WorkoutLogEntry, DailyCompletion } from '../shared/types';
 import { todayId } from '../shared/dateUtils';
 import { PunchInButton } from '../../components/PunchInButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { PageCard } from '../../components/PageCard';
+import { fieldClass, buttonClass } from '../../components/ui';
 import { useTutorial } from '../../tutorials/useTutorial';
 import { TutorialStoryboard } from '../../tutorials/TutorialStoryboard';
 import { tutorialContent } from '../../tutorials/tutorialContent';
@@ -42,11 +44,15 @@ export function WorkoutScreen({ uid }: { uid: string }) {
   }
 
   if (error) {
-    return <p className="p-6">Something went wrong: {error}</p>;
+    return (
+      <PageCard>
+        <p className="text-sm text-[#B3261E]">Something went wrong: {error}</p>
+      </PageCard>
+    );
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-4">
+    <PageCard>
       <ScreenHeader label="Workout" />
       <div id="workout-punchin">
         <PunchInButton done={completion?.workout ?? false} onToggle={handlePunchIn} />
@@ -57,29 +63,29 @@ export function WorkoutScreen({ uid }: { uid: string }) {
           placeholder="Exercise"
           value={exercise}
           onChange={(e) => setExercise(e.target.value)}
-          className="border rounded px-3 py-2"
+          className={fieldClass}
         />
         <input
           type="text"
           placeholder="Detail (e.g. 3x10 or 30 min)"
           value={detail}
           onChange={(e) => setDetail(e.target.value)}
-          className="border rounded px-3 py-2"
+          className={`${fieldClass} flex-1`}
         />
-        <button type="submit" className="bg-blue-600 text-white rounded px-3 py-2">
+        <button type="submit" className={buttonClass}>
           Add entry
         </button>
       </form>
-      <ul className="flex flex-col gap-1">
+      <ul className="flex flex-col gap-1.5">
         {entries.map((entry) => (
-          <li key={entry.id} className="text-sm">
-            {entry.date} — {entry.exercise} ({entry.detail})
+          <li key={entry.id} className="text-sm border-b border-line last:border-b-0 pb-1.5">
+            <span className="font-mono text-xs text-muted">{entry.date}</span> — {entry.exercise} ({entry.detail})
           </li>
         ))}
       </ul>
       {tutorial.isOpen && (
         <TutorialStoryboard title="Workout" steps={tutorialContent.workout} onDismiss={tutorial.dismiss} />
       )}
-    </div>
+    </PageCard>
   );
 }

@@ -4,6 +4,8 @@ import { getCompletion, setChoreDone } from '../shared/completionsApi';
 import { ChoreConfig, DailyCompletion } from '../shared/types';
 import { dayOfWeek, todayId } from '../shared/dateUtils';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { PageCard } from '../../components/PageCard';
+import { fieldClass, buttonClass } from '../../components/ui';
 import { useTutorial } from '../../tutorials/useTutorial';
 import { TutorialStoryboard } from '../../tutorials/TutorialStoryboard';
 import { tutorialContent } from '../../tutorials/tutorialContent';
@@ -46,27 +48,32 @@ export function ChoresScreen({ uid }: { uid: string }) {
   const dow = dayOfWeek(todayId());
 
   if (error) {
-    return <p className="p-6">Something went wrong: {error}</p>;
+    return (
+      <PageCard>
+        <p className="text-sm text-[#B3261E]">Something went wrong: {error}</p>
+      </PageCard>
+    );
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-4">
+    <PageCard>
       <ScreenHeader label="Chores" />
       <ul id="chores-list" className="flex flex-col gap-2">
         {chores.map((chore) => {
           const dueToday = isChoreDueToday(chore, dow);
           const done = completion?.chores?.[chore.id] ?? false;
           return (
-            <li key={chore.id} className="flex items-center gap-2">
+            <li key={chore.id} className="flex items-center gap-2.5 border-b border-line last:border-b-0 pb-2">
               <input
                 type="checkbox"
                 aria-label={chore.name}
                 checked={done}
                 disabled={!dueToday}
                 onChange={(e) => handleToggle(chore.id, e.target.checked)}
+                className="accent-primary w-4 h-4"
               />
-              <span>{chore.name}</span>
-              {!dueToday && <span className="text-xs text-gray-400">(not due today)</span>}
+              <span className="text-sm flex-1">{chore.name}</span>
+              {!dueToday && <span className="font-mono text-xs text-muted">not due today</span>}
             </li>
           );
         })}
@@ -77,15 +84,15 @@ export function ChoresScreen({ uid }: { uid: string }) {
           placeholder="New chore name"
           value={newChoreName}
           onChange={(e) => setNewChoreName(e.target.value)}
-          className="border rounded px-3 py-2"
+          className={`${fieldClass} flex-1`}
         />
-        <button type="submit" className="bg-blue-600 text-white rounded px-3 py-2">
+        <button type="submit" className={buttonClass}>
           Add chore
         </button>
       </form>
       {tutorial.isOpen && (
         <TutorialStoryboard title="Chores" steps={tutorialContent.chores} onDismiss={tutorial.dismiss} />
       )}
-    </div>
+    </PageCard>
   );
 }

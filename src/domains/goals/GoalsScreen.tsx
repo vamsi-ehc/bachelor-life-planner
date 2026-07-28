@@ -5,6 +5,8 @@ import { computeMilestoneProgress, isWeeklyReviewDue } from './goalsLogic';
 import { Goal, Milestone, WeeklyReview } from '../shared/types';
 import { todayId, dayOfWeek, weekId } from '../shared/dateUtils';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { PageCard } from '../../components/PageCard';
+import { fieldClass, buttonClass, sectionLabelClass } from '../../components/ui';
 import { useTutorial } from '../../tutorials/useTutorial';
 import { TutorialStoryboard } from '../../tutorials/TutorialStoryboard';
 import { tutorialContent } from '../../tutorials/tutorialContent';
@@ -81,31 +83,35 @@ export function GoalsScreen({ uid }: { uid: string }) {
   }
 
   if (error) {
-    return <p className="p-6">Something went wrong: {error}</p>;
+    return (
+      <PageCard>
+        <p className="text-sm text-[#B3261E]">Something went wrong: {error}</p>
+      </PageCard>
+    );
   }
 
   const dow = dayOfWeek(todayId());
   const reviewDue = isWeeklyReviewDue(dow, review);
 
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-6">
+    <PageCard>
       <ScreenHeader label="Goals & Journaling" />
 
-      <section className="flex flex-col gap-2">
-        <h2 className="font-semibold">Goals</h2>
-        <ul id="goals-list" className="flex flex-col gap-3">
+      <section className="flex flex-col gap-3">
+        <p className={sectionLabelClass}>Goals</p>
+        <ul id="goals-list" className="flex flex-col gap-4">
           {goals.map((goal) => {
             const progress = computeMilestoneProgress(goal);
             return (
-              <li key={goal.id} className="flex flex-col gap-1">
+              <li key={goal.id} className="flex flex-col gap-1.5 border-b border-line last:border-b-0 pb-3">
                 <div className="flex justify-between text-sm">
-                  <span>{goal.title}</span>
-                  <span>{goal.targetDate}</span>
+                  <span className="font-display font-semibold">{goal.title}</span>
+                  <span className="font-mono text-xs text-muted">{goal.targetDate}</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded h-2">
-                  <div className="h-2 rounded bg-blue-500" style={{ width: `${progress}%` }} />
+                <div className="w-full bg-line rounded-full h-2">
+                  <div className="h-2 rounded-full bg-primary" style={{ width: `${progress}%` }} />
                 </div>
-                <ul className="flex flex-col gap-1 pl-3">
+                <ul className="flex flex-col gap-1 pl-1">
                   {goal.milestones.map((m) => (
                     <li key={m.id} className="flex items-center gap-2 text-sm">
                       <input
@@ -113,8 +119,9 @@ export function GoalsScreen({ uid }: { uid: string }) {
                         aria-label={m.label}
                         checked={m.done}
                         onChange={(e) => handleToggleMilestone(goal.id, m.id, e.target.checked)}
+                        className="accent-primary w-4 h-4"
                       />
-                      <span className={m.done ? 'line-through text-gray-400' : ''}>{m.label}</span>
+                      <span className={m.done ? 'line-through text-muted' : ''}>{m.label}</span>
                     </li>
                   ))}
                 </ul>
@@ -128,52 +135,59 @@ export function GoalsScreen({ uid }: { uid: string }) {
             placeholder="Goal title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="border rounded px-3 py-2"
+            className={fieldClass}
           />
           <input
             type="text"
             placeholder="Target date"
             value={targetDate}
             onChange={(e) => setTargetDate(e.target.value)}
-            className="border rounded px-3 py-2"
+            className={fieldClass}
           />
           <input
             type="text"
             placeholder="Milestones (comma separated)"
             value={milestonesInput}
             onChange={(e) => setMilestonesInput(e.target.value)}
-            className="border rounded px-3 py-2 flex-1"
+            className={`${fieldClass} flex-1`}
           />
-          <button type="submit" className="bg-blue-600 text-white rounded px-3 py-2">
+          <button type="submit" className={buttonClass}>
             Add goal
           </button>
         </form>
       </section>
 
-      <section id="goals-review" className="flex flex-col gap-2">
-        <h2 className="font-semibold">
-          Weekly review {reviewDue && <span className="text-xs bg-amber-100 text-amber-800 rounded px-2 py-0.5">Due today</span>}
-        </h2>
+      <hr className="border-line" />
+
+      <section id="goals-review" className="flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <p className={sectionLabelClass}>Weekly review</p>
+          {reviewDue && (
+            <span className="font-mono text-[10px] uppercase tracking-wide bg-primary-dim text-primary rounded-full px-2 py-0.5">
+              Due today
+            </span>
+          )}
+        </div>
         <form onSubmit={handleSaveReview} className="flex flex-col gap-2">
           <textarea
             placeholder="What went well?"
             value={wentWell}
             onChange={(e) => setWentWell(e.target.value)}
-            className="border rounded px-3 py-2"
+            className={fieldClass}
           />
           <textarea
             placeholder="What didn't go well?"
             value={wentBadly}
             onChange={(e) => setWentBadly(e.target.value)}
-            className="border rounded px-3 py-2"
+            className={fieldClass}
           />
           <textarea
             placeholder="Focus for next week"
             value={focusNext}
             onChange={(e) => setFocusNext(e.target.value)}
-            className="border rounded px-3 py-2"
+            className={fieldClass}
           />
-          <button type="submit" className="bg-blue-600 text-white rounded px-3 py-2 self-start">
+          <button type="submit" className={buttonClass}>
             Save review
           </button>
         </form>
@@ -181,6 +195,6 @@ export function GoalsScreen({ uid }: { uid: string }) {
       {tutorial.isOpen && (
         <TutorialStoryboard title="Goals & Journaling" steps={tutorialContent.goals} onDismiss={tutorial.dismiss} />
       )}
-    </div>
+    </PageCard>
   );
 }

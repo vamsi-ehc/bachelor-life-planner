@@ -6,6 +6,8 @@ import { computeCategorySpend, computeBudgetPercent } from './financeLogic';
 import { Transaction, Budget, Bill } from '../shared/types';
 import { todayId, dayOfMonth, daysInMonth } from '../shared/dateUtils';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { PageCard } from '../../components/PageCard';
+import { fieldClass, buttonClass, sectionLabelClass } from '../../components/ui';
 import { useTutorial } from '../../tutorials/useTutorial';
 import { TutorialStoryboard } from '../../tutorials/TutorialStoryboard';
 import { tutorialContent } from '../../tutorials/tutorialContent';
@@ -93,37 +95,41 @@ export function FinancesScreen({ uid }: { uid: string }) {
   }
 
   if (error) {
-    return <p className="p-6">Something went wrong: {error}</p>;
+    return (
+      <PageCard>
+        <p className="text-sm text-[#B3261E]">Something went wrong: {error}</p>
+      </PageCard>
+    );
   }
 
   const dayOfMonthNow = dayOfMonth(todayId());
   const daysInMonthNow = daysInMonth(todayId());
 
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-6">
+    <PageCard>
       <ScreenHeader label="Finances" />
 
-      <section id="finances-transactions" className="flex flex-col gap-2">
-        <h2 className="font-semibold">Add transaction</h2>
+      <section id="finances-transactions" className="flex flex-col gap-3">
+        <p className={sectionLabelClass}>Add transaction</p>
         <form onSubmit={handleAddTransaction} className="flex flex-wrap gap-2">
           <input
             type="number"
             placeholder="Amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="border rounded px-3 py-2 w-28"
+            className={`${fieldClass} w-28`}
           />
           <input
             type="text"
             placeholder="Category"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="border rounded px-3 py-2"
+            className={fieldClass}
           />
           <select
             value={type}
             onChange={(e) => setType(e.target.value as 'expense' | 'income')}
-            className="border rounded px-3 py-2"
+            className={fieldClass}
           >
             <option value="expense">Expense</option>
             <option value="income">Income</option>
@@ -133,25 +139,31 @@ export function FinancesScreen({ uid }: { uid: string }) {
             placeholder="Note (optional)"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="border rounded px-3 py-2"
+            className={`${fieldClass} flex-1`}
           />
-          <button type="submit" className="bg-blue-600 text-white rounded px-3 py-2">
+          <button type="submit" className={buttonClass}>
             Add
           </button>
         </form>
-        <ul className="flex flex-col gap-1">
+        <ul className="flex flex-col gap-1.5">
           {transactions.map((t) => (
-            <li key={t.id} className="text-sm">
-              {t.date} — {t.type === 'expense' ? '-' : '+'}${t.amount.toFixed(2)} ({t.category})
+            <li key={t.id} className="text-sm border-b border-line last:border-b-0 pb-1.5">
+              <span className="font-mono text-xs text-muted">{t.date}</span>{' '}
+              <span className={t.type === 'expense' ? 'text-[#B3261E]' : 'text-ok'}>
+                {t.type === 'expense' ? '-' : '+'}${t.amount.toFixed(2)}
+              </span>{' '}
+              ({t.category})
               {t.note ? ` — ${t.note}` : ''}
             </li>
           ))}
         </ul>
       </section>
 
-      <section id="finances-budgets" className="flex flex-col gap-2">
-        <h2 className="font-semibold">Budgets</h2>
-        <ul className="flex flex-col gap-2">
+      <hr className="border-line" />
+
+      <section id="finances-budgets" className="flex flex-col gap-3">
+        <p className={sectionLabelClass}>Budgets</p>
+        <ul className="flex flex-col gap-3">
           {budgets.map((b) => {
             const spend = computeCategorySpend(transactions, b.category);
             const percent = computeBudgetPercent(spend, b.monthlyLimit);
@@ -159,14 +171,17 @@ export function FinancesScreen({ uid }: { uid: string }) {
               <li key={b.category}>
                 <div className="flex justify-between text-sm">
                   <span>{b.category}</span>
-                  <span>
+                  <span className="font-mono text-xs text-muted">
                     ${spend.toFixed(2)} / ${b.monthlyLimit.toFixed(2)}
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded h-2">
+                <div className="w-full bg-line rounded-full h-2 mt-1">
                   <div
-                    className={`h-2 rounded ${percent >= 100 ? 'bg-red-500' : 'bg-blue-500'}`}
-                    style={{ width: `${percent}%` }}
+                    className="h-2 rounded-full"
+                    style={{
+                      width: `${Math.min(percent, 100)}%`,
+                      background: percent >= 100 ? '#B3261E' : '#3947C4',
+                    }}
                   />
                 </div>
               </li>
@@ -179,31 +194,35 @@ export function FinancesScreen({ uid }: { uid: string }) {
             placeholder="Budget category"
             value={budgetCategory}
             onChange={(e) => setBudgetCategory(e.target.value)}
-            className="border rounded px-3 py-2"
+            className={fieldClass}
           />
           <input
             type="number"
             placeholder="Monthly limit"
             value={budgetLimit}
             onChange={(e) => setBudgetLimit(e.target.value)}
-            className="border rounded px-3 py-2 w-32"
+            className={`${fieldClass} w-32`}
           />
-          <button type="submit" className="bg-blue-600 text-white rounded px-3 py-2">
+          <button type="submit" className={buttonClass}>
             Set budget
           </button>
         </form>
       </section>
 
-      <section id="finances-bills" className="flex flex-col gap-2">
-        <h2 className="font-semibold">Bills</h2>
-        <ul className="flex flex-col gap-1">
+      <hr className="border-line" />
+
+      <section id="finances-bills" className="flex flex-col gap-3">
+        <p className={sectionLabelClass}>Bills</p>
+        <ul className="flex flex-col gap-1.5">
           {bills.map((bill) => (
-            <li key={bill.id} className="text-sm flex items-center gap-2">
+            <li key={bill.id} className="text-sm flex items-center gap-2 border-b border-line last:border-b-0 pb-1.5">
               <span>
                 {bill.name} — ${bill.amount.toFixed(2)} (due day {bill.dueDay})
               </span>
               {isBillDueToday(bill, dayOfMonthNow, daysInMonthNow) && (
-                <span className="text-xs bg-amber-100 text-amber-800 rounded px-2 py-0.5">Due today</span>
+                <span className="font-mono text-[10px] uppercase tracking-wide bg-primary-dim text-primary rounded-full px-2 py-0.5">
+                  Due today
+                </span>
               )}
             </li>
           ))}
@@ -214,30 +233,30 @@ export function FinancesScreen({ uid }: { uid: string }) {
             placeholder="Bill name"
             value={billName}
             onChange={(e) => setBillName(e.target.value)}
-            className="border rounded px-3 py-2"
+            className={fieldClass}
           />
           <input
             type="number"
             placeholder="Bill amount"
             value={billAmount}
             onChange={(e) => setBillAmount(e.target.value)}
-            className="border rounded px-3 py-2 w-28"
+            className={`${fieldClass} w-28`}
           />
           <input
             type="number"
             placeholder="Due day (1-31)"
             value={billDueDay}
             onChange={(e) => setBillDueDay(e.target.value)}
-            className="border rounded px-3 py-2 w-32"
+            className={`${fieldClass} w-32`}
           />
           <input
             type="text"
             placeholder="Bill category"
             value={billCategory}
             onChange={(e) => setBillCategory(e.target.value)}
-            className="border rounded px-3 py-2"
+            className={fieldClass}
           />
-          <button type="submit" className="bg-blue-600 text-white rounded px-3 py-2">
+          <button type="submit" className={buttonClass}>
             Add bill
           </button>
         </form>
@@ -245,6 +264,6 @@ export function FinancesScreen({ uid }: { uid: string }) {
       {tutorial.isOpen && (
         <TutorialStoryboard title="Finances" steps={tutorialContent.finances} onDismiss={tutorial.dismiss} />
       )}
-    </div>
+    </PageCard>
   );
 }

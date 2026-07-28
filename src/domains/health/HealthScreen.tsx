@@ -5,6 +5,8 @@ import { computeSleepDurationHours, computeWeightChange } from './healthLogic';
 import { SleepLog, WeightEntry } from '../shared/types';
 import { todayId } from '../shared/dateUtils';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { PageCard } from '../../components/PageCard';
+import { fieldClass, buttonClass, sectionLabelClass } from '../../components/ui';
 import { useTutorial } from '../../tutorials/useTutorial';
 import { TutorialStoryboard } from '../../tutorials/TutorialStoryboard';
 import { tutorialContent } from '../../tutorials/tutorialContent';
@@ -48,7 +50,11 @@ export function HealthScreen({ uid }: { uid: string }) {
   }
 
   if (error) {
-    return <p className="p-6">Something went wrong: {error}</p>;
+    return (
+      <PageCard>
+        <p className="text-sm text-[#B3261E]">Something went wrong: {error}</p>
+      </PageCard>
+    );
   }
 
   const duration =
@@ -58,49 +64,51 @@ export function HealthScreen({ uid }: { uid: string }) {
   const weightChange = computeWeightChange(weightEntries);
 
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-6">
+    <PageCard>
       <ScreenHeader label="Sleep & Health" />
 
-      <section id="health-sleep" className="flex flex-col gap-2">
-        <h2 className="font-semibold">Sleep</h2>
-        {duration !== null && <p className="text-sm text-gray-600">{duration}h slept</p>}
+      <section id="health-sleep" className="flex flex-col gap-3">
+        <p className={sectionLabelClass}>Sleep</p>
+        {duration !== null && <p className="text-sm text-muted">{duration}h slept</p>}
         <form onSubmit={handleSaveSleep} className="flex flex-wrap gap-2 items-end">
-          <label className="flex flex-col text-sm">
+          <label className="flex flex-col gap-1 text-sm text-muted">
             Bedtime
             <input
               type="time"
               value={bedtime}
               onChange={(e) => setBedtime(e.target.value)}
-              className="border rounded px-3 py-2"
+              className={fieldClass}
             />
           </label>
-          <label className="flex flex-col text-sm">
+          <label className="flex flex-col gap-1 text-sm text-muted">
             Wake time
             <input
               type="time"
               value={wakeTime}
               onChange={(e) => setWakeTime(e.target.value)}
-              className="border rounded px-3 py-2"
+              className={fieldClass}
             />
           </label>
-          <button type="submit" className="bg-blue-600 text-white rounded px-3 py-2">
+          <button type="submit" className={buttonClass}>
             Save sleep
           </button>
         </form>
       </section>
 
-      <section id="health-weight" className="flex flex-col gap-2">
-        <h2 className="font-semibold">Weight</h2>
+      <hr className="border-line" />
+
+      <section id="health-weight" className="flex flex-col gap-3">
+        <p className={sectionLabelClass}>Weight</p>
         {weightChange !== null && (
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted">
             {weightChange > 0 ? '+' : ''}
             {weightChange}kg since last entry
           </p>
         )}
-        <ul className="flex flex-col gap-1">
+        <ul className="flex flex-col gap-1.5">
           {weightEntries.map((entry) => (
-            <li key={entry.id} className="text-sm">
-              {entry.date} — {entry.weightKg}kg
+            <li key={entry.id} className="text-sm border-b border-line last:border-b-0 pb-1.5">
+              <span className="font-mono text-xs text-muted">{entry.date}</span> — {entry.weightKg}kg
             </li>
           ))}
         </ul>
@@ -110,9 +118,9 @@ export function HealthScreen({ uid }: { uid: string }) {
             placeholder="Weight (kg)"
             value={weightKg}
             onChange={(e) => setWeightKg(e.target.value)}
-            className="border rounded px-3 py-2 w-32"
+            className={`${fieldClass} w-32`}
           />
-          <button type="submit" className="bg-blue-600 text-white rounded px-3 py-2">
+          <button type="submit" className={buttonClass}>
             Log weight
           </button>
         </form>
@@ -120,6 +128,6 @@ export function HealthScreen({ uid }: { uid: string }) {
       {tutorial.isOpen && (
         <TutorialStoryboard title="Sleep & Health" steps={tutorialContent.health} onDismiss={tutorial.dismiss} />
       )}
-    </div>
+    </PageCard>
   );
 }

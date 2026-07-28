@@ -8,7 +8,7 @@ describe('ga', () => {
     document.head.innerHTML = '';
     delete (window as unknown as { gtag?: unknown }).gtag;
     delete (window as unknown as { dataLayer?: unknown }).dataLayer;
-    vi.stubEnv('PROD', 'true');
+    vi.stubEnv('PROD', true);
     vi.stubEnv('VITE_GA_MEASUREMENT_ID', 'G-TEST123');
   });
 

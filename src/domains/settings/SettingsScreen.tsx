@@ -2,6 +2,8 @@ import { useEffect, useState, FormEvent } from 'react';
 import { getReminderConfig, saveReminderConfig } from './reminderConfigApi';
 import { ReminderConfig } from '../shared/types';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { PageCard } from '../../components/PageCard';
+import { fieldClass, buttonClass, sectionLabelClass } from '../../components/ui';
 import { useTutorial } from '../../tutorials/useTutorial';
 import { TutorialStoryboard } from '../../tutorials/TutorialStoryboard';
 import { tutorialContent } from '../../tutorials/tutorialContent';
@@ -39,98 +41,107 @@ export function SettingsScreen({ uid }: { uid: string }) {
   }
 
   if (error) {
-    return <p className="p-6">Something went wrong: {error}</p>;
+    return (
+      <PageCard>
+        <p className="text-sm text-[#B3261E]">Something went wrong: {error}</p>
+      </PageCard>
+    );
   }
 
   if (!config) {
-    return <p className="p-6">Loading...</p>;
+    return (
+      <PageCard>
+        <p className="text-sm text-muted">Loading...</p>
+      </PageCard>
+    );
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-6">
+    <PageCard>
       <ScreenHeader label="Settings" />
-      <form id="settings-reminders" onSubmit={handleSave} className="flex flex-col gap-4 max-w-sm">
-        <label className="flex flex-col text-sm" htmlFor="workoutTime">
-          Workout reminder
-          <input
-            id="workoutTime"
-            type="time"
-            value={config.workoutTime}
-            onChange={(e) => {
-              setConfig({ ...config, workoutTime: e.target.value });
-              setSaved(false);
-              setSaveError(null);
-            }}
-            className="border rounded px-3 py-2"
-          />
-        </label>
-        <label className="flex flex-col text-sm" htmlFor="dinnerTime">
-          Dinner prep reminder
-          <input
-            id="dinnerTime"
-            type="time"
-            value={config.dinnerTime}
-            onChange={(e) => {
-              setConfig({ ...config, dinnerTime: e.target.value });
-              setSaved(false);
-              setSaveError(null);
-            }}
-            className="border rounded px-3 py-2"
-          />
-        </label>
-        <label className="flex flex-col text-sm" htmlFor="learningTime">
-          Learning reminder
-          <input
-            id="learningTime"
-            type="time"
-            value={config.learningTime}
-            onChange={(e) => {
-              setConfig({ ...config, learningTime: e.target.value });
-              setSaved(false);
-              setSaveError(null);
-            }}
-            className="border rounded px-3 py-2"
-          />
-        </label>
-        <label className="flex flex-col text-sm" htmlFor="weeklyReviewTime">
-          Weekly review reminder (Sunday)
-          <input
-            id="weeklyReviewTime"
-            type="time"
-            value={config.weeklyReviewTime}
-            onChange={(e) => {
-              setConfig({ ...config, weeklyReviewTime: e.target.value });
-              setSaved(false);
-              setSaveError(null);
-            }}
-            className="border rounded px-3 py-2"
-          />
-        </label>
-        <p className="text-sm text-gray-600">Timezone: {config.timezone}</p>
-        <button type="submit" className="bg-blue-600 text-white rounded px-3 py-2 self-start">
-          Save
-        </button>
-        {saveError && <p className="text-sm text-red-700">{saveError}</p>}
-        {saved && <p className="text-sm text-green-700">Saved.</p>}
-      </form>
+      <section className="flex flex-col gap-3">
+        <p className={sectionLabelClass}>Reminders</p>
+        <form id="settings-reminders" onSubmit={handleSave} className="flex flex-col gap-4 max-w-sm">
+          <label className="flex flex-col gap-1 text-sm text-muted" htmlFor="workoutTime">
+            Workout reminder
+            <input
+              id="workoutTime"
+              type="time"
+              value={config.workoutTime}
+              onChange={(e) => {
+                setConfig({ ...config, workoutTime: e.target.value });
+                setSaved(false);
+                setSaveError(null);
+              }}
+              className={fieldClass}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm text-muted" htmlFor="dinnerTime">
+            Dinner prep reminder
+            <input
+              id="dinnerTime"
+              type="time"
+              value={config.dinnerTime}
+              onChange={(e) => {
+                setConfig({ ...config, dinnerTime: e.target.value });
+                setSaved(false);
+                setSaveError(null);
+              }}
+              className={fieldClass}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm text-muted" htmlFor="learningTime">
+            Learning reminder
+            <input
+              id="learningTime"
+              type="time"
+              value={config.learningTime}
+              onChange={(e) => {
+                setConfig({ ...config, learningTime: e.target.value });
+                setSaved(false);
+                setSaveError(null);
+              }}
+              className={fieldClass}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm text-muted" htmlFor="weeklyReviewTime">
+            Weekly review reminder (Sunday)
+            <input
+              id="weeklyReviewTime"
+              type="time"
+              value={config.weeklyReviewTime}
+              onChange={(e) => {
+                setConfig({ ...config, weeklyReviewTime: e.target.value });
+                setSaved(false);
+                setSaveError(null);
+              }}
+              className={fieldClass}
+            />
+          </label>
+          <p className="font-mono text-xs text-muted">Timezone: {config.timezone}</p>
+          <button type="submit" className={buttonClass}>
+            Save
+          </button>
+          {saveError && <p className="text-sm text-[#B3261E]">{saveError}</p>}
+          {saved && <p className="text-sm text-ok">Saved.</p>}
+        </form>
+      </section>
 
-      <section id="settings-replay" className="flex flex-col gap-2 max-w-sm">
-        <h2 className="font-semibold">Tutorials</h2>
-        <button
-          type="button"
-          onClick={handleReplayTutorials}
-          className="bg-blue-600 text-white rounded px-3 py-2 self-start"
-        >
+      <hr className="border-line" />
+
+      <section id="settings-replay" className="flex flex-col gap-3 max-w-sm">
+        <p className={sectionLabelClass}>Tutorials</p>
+        <button type="button" onClick={handleReplayTutorials} className={buttonClass}>
           Replay all tutorials
         </button>
         {tutorialsReset && (
-          <p className="text-sm text-green-700">Tutorials will show again next time you visit each screen.</p>
+          <p className="text-sm text-ok">Tutorials will show again next time you visit each screen.</p>
         )}
       </section>
 
       {tutorial.isOpen && (
         <TutorialStoryboard title="Settings" steps={tutorialContent.settings} onDismiss={tutorial.dismiss} />
       )}
-    </div>
+    </PageCard>
   );
 }

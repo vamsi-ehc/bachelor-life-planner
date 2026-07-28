@@ -21,12 +21,14 @@ import {
   computeStreak,
   computeDueItems,
   computeDayHealth,
+  computeDayHealthHistory,
   computeBillDueItems,
   computeGroceryDueItem,
   computeWeeklyReviewDueItem,
+  DayHealthPoint,
 } from './dashboardLogic';
 
-const STREAK_HISTORY_DAYS = 30;
+const STREAK_HISTORY_DAYS = 70;
 
 export interface DashboardData {
   loading: boolean;
@@ -39,6 +41,7 @@ export interface DashboardData {
   dueTodayChoreIds: string[];
   streak: number;
   dayHealth: number;
+  healthHistory: DayHealthPoint[];
   sleepLog: SleepLog | null;
   goals: Goal[];
   weeklyReview: WeeklyReview | null;
@@ -96,6 +99,7 @@ export function useDashboardData(uid: string): DashboardData {
       dueTodayChoreIds: [],
       streak: 0,
       dayHealth: 0,
+      healthHistory: [],
       sleepLog: null,
       goals: [],
       weeklyReview: null,
@@ -114,6 +118,7 @@ export function useDashboardData(uid: string): DashboardData {
   const dueTodayChoreIds = chores.filter((c) => isChoreDueToday(c, dow)).map((c) => c.id);
   const streak = computeStreak(history);
   const dayHealth = computeDayHealth(completion, dueTodayChoreIds);
+  const healthHistory = computeDayHealthHistory(history, chores);
 
   return {
     loading,
@@ -126,6 +131,7 @@ export function useDashboardData(uid: string): DashboardData {
     dueTodayChoreIds,
     streak,
     dayHealth,
+    healthHistory,
     sleepLog,
     goals,
     weeklyReview,

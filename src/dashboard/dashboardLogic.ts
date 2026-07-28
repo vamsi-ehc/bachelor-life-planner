@@ -2,6 +2,7 @@ import { ChoreConfig, DailyCompletion, DueItem, Bill, GroceryItem, WeeklyReview 
 import { isChoreDueToday } from '../domains/chores/choresApi';
 import { isBillDueToday } from '../domains/finances/billsApi';
 import { isWeeklyReviewDue } from '../domains/goals/goalsLogic';
+import { dayOfWeek } from '../domains/shared/dateUtils';
 
 export function computeStreak(completions: DailyCompletion[]): number {
   let streak = 0;
@@ -32,6 +33,25 @@ export function computeDayHealth(completion: DailyCompletion, dueTodayChoreIds: 
     (completion.learning ? 1 : 0) +
     dueTodayChoreIds.filter((id) => completion.chores[id]).length;
   return totalTasks === 0 ? 100 : Math.round((doneTasks / totalTasks) * 100);
+}
+
+export interface DayHealthPoint {
+  date: string;
+  value: number;
+}
+
+export function computeDayHealthHistory(
+  history: DailyCompletion[],
+  chores: ChoreConfig[]
+): DayHealthPoint[] {
+  return [...history]
+    .reverse()
+    .map((day) => {
+      const dueChoreIds = chores
+        .filter((c) => isChoreDueToday(c, dayOfWeek(day.date)))
+        .map((c) => c.id);
+      return { date: day.date, value: computeDayHealth(day, dueChoreIds) };
+    });
 }
 
 export function computeBillDueItems(bills: Bill[], dayOfMonth: number, daysInMonth: number): DueItem[] {
