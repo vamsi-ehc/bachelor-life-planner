@@ -1,6 +1,14 @@
 import { describe, it, expect, vi } from 'vitest';
-import { computeStreak, computeDueItems, computeDayHealth, computeBillDueItems, computeGroceryDueItem, computeWeeklyReviewDueItem } from './dashboardLogic';
-import { ChoreConfig, DailyCompletion, Bill, GroceryItem, WeeklyReview } from '../domains/shared/types';
+import {
+  computeStreak,
+  computeDueItems,
+  computeReminderDueItems,
+  computeDayHealth,
+  computeBillDueItems,
+  computeGroceryDueItem,
+  computeWeeklyReviewDueItem,
+} from './dashboardLogic';
+import { ChoreConfig, CustomReminder, DailyCompletion, Bill, GroceryItem, WeeklyReview } from '../domains/shared/types';
 
 vi.mock('../firebase/config', () => ({ db: {} }));
 
@@ -34,9 +42,29 @@ describe('computeDueItems', () => {
       workout: false,
       learning: false,
       chores: { c1: true },
+      reminders: {},
     };
     const result = computeDueItems(chores, completion, 1);
     expect(result).toEqual([{ id: 'c2', label: 'Laundry', domain: 'chores' }]);
+  });
+});
+
+describe('computeReminderDueItems', () => {
+  const reminders: CustomReminder[] = [
+    { id: 'r1', label: 'Drink water', time: '10:00', cadence: 'daily' },
+    { id: 'r2', label: 'Gym', time: '07:00', cadence: 'weekly', weeklyDays: [1] },
+  ];
+
+  it('lists due, not-yet-done reminders only', () => {
+    const completion: DailyCompletion = {
+      date: '2026-07-20',
+      workout: false,
+      learning: false,
+      chores: {},
+      reminders: { r1: true },
+    };
+    const result = computeReminderDueItems(reminders, completion, 1);
+    expect(result).toEqual([{ id: 'r2', label: 'Gym', domain: 'reminders' }]);
   });
 });
 
@@ -47,6 +75,7 @@ describe('computeDayHealth', () => {
       workout: true,
       learning: false,
       chores: { c1: true },
+      reminders: {},
     };
     expect(computeDayHealth(completion, ['c1'])).toBe(67);
   });
@@ -57,10 +86,23 @@ describe('computeDayHealth', () => {
       workout: false,
       learning: false,
       chores: {},
+      reminders: {},
     };
     // workout + learning always count as 2 base tasks, so this case only
     // arises hypothetically; guard against division by zero regardless.
     expect(computeDayHealth(completion, [])).toBe(0);
+  });
+
+  it('folds due, unchecked reminders into the task count', () => {
+    const completion: DailyCompletion = {
+      date: '2026-07-20',
+      workout: true,
+      learning: true,
+      chores: {},
+      reminders: { r1: true },
+    };
+    // 2 base + 2 reminders = 4 tasks; workout+learning+r1 done = 3/4 = 75%
+    expect(computeDayHealth(completion, [], ['r1', 'r2'])).toBe(75);
   });
 });
 

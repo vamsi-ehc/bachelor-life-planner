@@ -1,5 +1,6 @@
-import { ChoreConfig, DailyCompletion, DueItem, Bill, GroceryItem, WeeklyReview } from '../domains/shared/types';
+import { ChoreConfig, CustomReminder, DailyCompletion, DueItem, Bill, GroceryItem, WeeklyReview } from '../domains/shared/types';
 import { isChoreDueToday } from '../domains/chores/choresApi';
+import { isCustomReminderDueToday } from '../domains/reminders/remindersApi';
 import { isBillDueToday } from '../domains/finances/billsApi';
 import { isWeeklyReviewDue } from '../domains/goals/goalsLogic';
 import { dayOfWeek } from '../domains/shared/dateUtils';
@@ -26,12 +27,27 @@ export function computeDueItems(
     .map((c) => ({ id: c.id, label: c.name, domain: 'chores' as const }));
 }
 
-export function computeDayHealth(completion: DailyCompletion, dueTodayChoreIds: string[]): number {
-  const totalTasks = 2 + dueTodayChoreIds.length;
+export function computeReminderDueItems(
+  reminders: CustomReminder[],
+  completion: DailyCompletion,
+  dow: number
+): DueItem[] {
+  return reminders
+    .filter((r) => isCustomReminderDueToday(r, dow) && !completion.reminders[r.id])
+    .map((r) => ({ id: r.id, label: r.label, domain: 'reminders' as const }));
+}
+
+export function computeDayHealth(
+  completion: DailyCompletion,
+  dueTodayChoreIds: string[],
+  dueTodayReminderIds: string[] = []
+): number {
+  const totalTasks = 2 + dueTodayChoreIds.length + dueTodayReminderIds.length;
   const doneTasks =
     (completion.workout ? 1 : 0) +
     (completion.learning ? 1 : 0) +
-    dueTodayChoreIds.filter((id) => completion.chores[id]).length;
+    dueTodayChoreIds.filter((id) => completion.chores[id]).length +
+    dueTodayReminderIds.filter((id) => completion.reminders[id]).length;
   return totalTasks === 0 ? 100 : Math.round((doneTasks / totalTasks) * 100);
 }
 
@@ -42,15 +58,16 @@ export interface DayHealthPoint {
 
 export function computeDayHealthHistory(
   history: DailyCompletion[],
-  chores: ChoreConfig[]
+  chores: ChoreConfig[],
+  reminders: CustomReminder[] = []
 ): DayHealthPoint[] {
   return [...history]
     .reverse()
     .map((day) => {
-      const dueChoreIds = chores
-        .filter((c) => isChoreDueToday(c, dayOfWeek(day.date)))
-        .map((c) => c.id);
-      return { date: day.date, value: computeDayHealth(day, dueChoreIds) };
+      const dow = dayOfWeek(day.date);
+      const dueChoreIds = chores.filter((c) => isChoreDueToday(c, dow)).map((c) => c.id);
+      const dueReminderIds = reminders.filter((r) => isCustomReminderDueToday(r, dow)).map((r) => r.id);
+      return { date: day.date, value: computeDayHealth(day, dueChoreIds, dueReminderIds) };
     });
 }
 
