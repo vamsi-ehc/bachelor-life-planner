@@ -36,8 +36,8 @@ export const tutorialContent: Record<TutorialScreenKey, TutorialStep[]> = {
   workout: [
     { title: 'Punch in', body: "Tap Punch In to mark today's workout done.", targetId: 'workout-punchin' },
     {
-      title: 'Log an exercise',
-      body: 'Add an exercise and detail (e.g. "3x10" or "30 min") to keep a history.',
+      title: 'Log a workout',
+      body: "Name your workout, add exercises, and log each set's reps and weight to keep a history.",
       targetId: 'workout-form',
     },
   ],
