@@ -103,6 +103,18 @@ export const tutorialContent: Record<TutorialScreenKey, TutorialStep[]> = {
       targetId: 'goals-review',
     },
   ],
+  reminders: [
+    {
+      title: 'Add a reminder',
+      body: 'Add a reminder with a label, time, and how often it repeats.',
+      targetId: 'reminders-form',
+    },
+    {
+      title: 'Check them off',
+      body: 'Check off reminders due today, or remove ones you no longer need.',
+      targetId: 'reminders-list',
+    },
+  ],
   settings: [
     {
       title: 'Reminders',

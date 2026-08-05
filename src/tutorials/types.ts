@@ -7,6 +7,7 @@ export type TutorialScreenKey =
   | 'meals'
   | 'health'
   | 'goals'
+  | 'reminders'
   | 'settings';
 
 export const TUTORIAL_SCREEN_KEYS: TutorialScreenKey[] = [
@@ -18,6 +19,7 @@ export const TUTORIAL_SCREEN_KEYS: TutorialScreenKey[] = [
   'meals',
   'health',
   'goals',
+  'reminders',
   'settings',
 ];
 

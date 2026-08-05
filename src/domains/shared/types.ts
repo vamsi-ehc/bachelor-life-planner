@@ -1,15 +1,24 @@
-export type DomainKey = 'workout' | 'learning' | 'chores' | 'finances' | 'meals' | 'health' | 'goals';
+export type DomainKey = 'workout' | 'learning' | 'chores' | 'finances' | 'meals' | 'health' | 'goals' | 'reminders';
 
 export interface DailyCompletion {
   date: string;
   workout: boolean;
   learning: boolean;
   chores: Record<string, boolean>;
+  reminders: Record<string, boolean>;
 }
 
 export interface ChoreConfig {
   id: string;
   name: string;
+  cadence: 'daily' | 'weekly';
+  weeklyDays?: number[];
+}
+
+export interface CustomReminder {
+  id: string;
+  label: string;
+  time: string;
   cadence: 'daily' | 'weekly';
   weeklyDays?: number[];
 }
