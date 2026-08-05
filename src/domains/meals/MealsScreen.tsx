@@ -1,7 +1,11 @@
 import { useEffect, useState, FormEvent } from 'react';
 import { listGroceryItems, addGroceryItem, setGroceryItemChecked } from './groceryApi';
 import { getMealLog, addMealEntry } from './mealLogApi';
-import { GroceryItem, MealLog } from '../shared/types';
+import { listMealPlans, saveMealPlan, deleteMealPlan, isMealPlanDueToday } from './mealPlansApi';
+import { applyCompletion } from '../shared/streakLogic';
+import { WeekdayPicker, weekdaySummary } from '../shared/WeekdayPicker';
+import { GroceryItem, MealLog, MealPlan } from '../shared/types';
+import { dayOfWeek, todayId } from '../shared/dateUtils';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { PageCard } from '../../components/PageCard';
 import { fieldClass, buttonClass, sectionLabelClass } from '../../components/ui';
@@ -15,6 +19,11 @@ export function MealsScreen({ uid }: { uid: string }) {
   const [newItemName, setNewItemName] = useState('');
   const [newMealEntry, setNewMealEntry] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [plans, setPlans] = useState<MealPlan[]>([]);
+  const [planName, setPlanName] = useState('');
+  const [planMeal, setPlanMeal] = useState<MealPlan['meal']>('dinner');
+  const [planCadence, setPlanCadence] = useState<'daily' | 'weekly'>('daily');
+  const [planWeeklyDays, setPlanWeeklyDays] = useState<number[]>([]);
   const tutorial = useTutorial(uid, 'meals');
 
   useEffect(() => {
@@ -23,6 +32,7 @@ export function MealsScreen({ uid }: { uid: string }) {
     };
     listGroceryItems(uid).then(setGroceryItems).catch(handleError);
     getMealLog(uid).then(setMealLog).catch(handleError);
+    listMealPlans(uid).then(setPlans).catch(handleError);
   }, [uid]);
 
   async function handleToggleItem(itemId: string, checked: boolean) {
@@ -45,6 +55,38 @@ export function MealsScreen({ uid }: { uid: string }) {
     await addMealEntry(uid, trimmed);
     setMealLog((prev) => (prev ? { ...prev, entries: [...prev.entries, trimmed] } : prev));
     setNewMealEntry('');
+
+    const today = todayId();
+    const dow = dayOfWeek(today);
+    const duePlans = plans.filter((p) => isMealPlanDueToday(p, dow) && p.lastCompletedDate !== today);
+    for (const plan of duePlans) {
+      const updated = { ...plan, ...applyCompletion(plan, today) };
+      await saveMealPlan(uid, updated);
+      setPlans((prev) => prev.map((p) => (p.id === plan.id ? updated : p)));
+    }
+  }
+
+  async function handleAddPlan(e: FormEvent) {
+    e.preventDefault();
+    if (!planName.trim()) return;
+    const plan: MealPlan = {
+      id: crypto.randomUUID(),
+      name: planName.trim(),
+      meal: planMeal,
+      cadence: planCadence,
+      ...(planCadence === 'weekly' ? { weeklyDays: planWeeklyDays } : {}),
+    };
+    await saveMealPlan(uid, plan);
+    setPlans((prev) => [...prev, plan]);
+    setPlanName('');
+    setPlanMeal('dinner');
+    setPlanCadence('daily');
+    setPlanWeeklyDays([]);
+  }
+
+  async function handleRemovePlan(planId: string) {
+    await deleteMealPlan(uid, planId);
+    setPlans((prev) => prev.filter((p) => p.id !== planId));
   }
 
   if (error) {
@@ -58,6 +100,72 @@ export function MealsScreen({ uid }: { uid: string }) {
   return (
     <PageCard>
       <ScreenHeader label="Meals & Groceries" />
+
+      <section id="meals-plans" className="flex flex-col gap-3">
+        <p className={sectionLabelClass}>Meal plans</p>
+        <ul className="flex flex-col gap-2">
+          {plans.map((plan) => {
+            const dueToday = isMealPlanDueToday(plan, dayOfWeek(todayId()));
+            return (
+              <li key={plan.id} className="flex items-center gap-2.5 border-b border-line last:border-b-0 pb-2">
+                <span className="text-sm flex-1">{plan.name}</span>
+                <span className="font-mono text-xs text-muted">{plan.meal}</span>
+                <span className="font-mono text-xs text-muted">
+                  {plan.cadence === 'daily' ? 'Daily' : weekdaySummary(plan.weeklyDays)}
+                </span>
+                <span className="font-mono text-xs text-muted">
+                  🔥{plan.currentStreak ?? 0} · {plan.points ?? 0} pts
+                </span>
+                {dueToday && <span className="font-mono text-xs text-primary">Due today</span>}
+                <button
+                  type="button"
+                  onClick={() => handleRemovePlan(plan.id)}
+                  className="text-xs text-muted hover:text-ink"
+                >
+                  Remove
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+        <form id="meal-plan-form" onSubmit={handleAddPlan} className="flex flex-col gap-2">
+          <input
+            type="text"
+            placeholder="Meal name (e.g. Grilled chicken)"
+            value={planName}
+            onChange={(e) => setPlanName(e.target.value)}
+            className={fieldClass}
+          />
+          <label className="flex flex-col gap-1 text-sm text-muted" htmlFor="meal-plan-meal">
+            Meal
+            <select
+              id="meal-plan-meal"
+              value={planMeal}
+              onChange={(e) => setPlanMeal(e.target.value as MealPlan['meal'])}
+              className={fieldClass}
+            >
+              <option value="breakfast">Breakfast</option>
+              <option value="lunch">Lunch</option>
+              <option value="dinner">Dinner</option>
+              <option value="snack">Snack</option>
+            </select>
+          </label>
+          <select
+            value={planCadence}
+            onChange={(e) => setPlanCadence(e.target.value as 'daily' | 'weekly')}
+            className={fieldClass}
+          >
+            <option value="daily">Daily</option>
+            <option value="weekly">Specific weekdays</option>
+          </select>
+          {planCadence === 'weekly' && <WeekdayPicker value={planWeeklyDays} onChange={setPlanWeeklyDays} />}
+          <button type="submit" className={buttonClass}>
+            Add plan
+          </button>
+        </form>
+      </section>
+
+      <hr className="border-line" />
 
       <section id="meals-grocery" className="flex flex-col gap-3">
         <p className={sectionLabelClass}>Grocery list</p>
