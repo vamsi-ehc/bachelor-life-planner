@@ -8,6 +8,14 @@ const mockListChores = vi.fn();
 const mockListBills = vi.fn();
 const mockListGroceryItems = vi.fn();
 const mockListCustomReminders = vi.fn();
+const mockListWorkoutRoutines = vi.fn();
+const mockListWorkoutLogEntries = vi.fn();
+const mockListLearningPlans = vi.fn();
+const mockListLearningLogEntries = vi.fn();
+const mockListHealthPlans = vi.fn();
+const mockListWeightEntries = vi.fn();
+const mockListMealPlans = vi.fn();
+const mockGetMealLog = vi.fn();
 
 vi.mock('firebase/firestore', () => ({
   collection: (..._args: unknown[]) => ({}),
@@ -48,6 +56,42 @@ vi.mock('../domains/reminders/remindersApi', async () => {
   );
   return { ...actual, listCustomReminders: (...args: [string]) => mockListCustomReminders(...args) };
 });
+vi.mock('../domains/workout/workoutRoutinesApi', async () => {
+  const actual = await vi.importActual<typeof import('../domains/workout/workoutRoutinesApi')>(
+    '../domains/workout/workoutRoutinesApi'
+  );
+  return { ...actual, listWorkoutRoutines: (...args: [string]) => mockListWorkoutRoutines(...args) };
+});
+vi.mock('../domains/workout/workoutApi', () => ({
+  listWorkoutLogEntries: (...args: [string]) => mockListWorkoutLogEntries(...args),
+}));
+vi.mock('../domains/learning/learningPlansApi', async () => {
+  const actual = await vi.importActual<typeof import('../domains/learning/learningPlansApi')>(
+    '../domains/learning/learningPlansApi'
+  );
+  return { ...actual, listLearningPlans: (...args: [string]) => mockListLearningPlans(...args) };
+});
+vi.mock('../domains/learning/learningApi', () => ({
+  listLearningLogEntries: (...args: [string]) => mockListLearningLogEntries(...args),
+}));
+vi.mock('../domains/health/healthPlansApi', async () => {
+  const actual = await vi.importActual<typeof import('../domains/health/healthPlansApi')>(
+    '../domains/health/healthPlansApi'
+  );
+  return { ...actual, listHealthPlans: (...args: [string]) => mockListHealthPlans(...args) };
+});
+vi.mock('../domains/health/weightApi', () => ({
+  listWeightEntries: (...args: [string]) => mockListWeightEntries(...args),
+}));
+vi.mock('../domains/meals/mealPlansApi', async () => {
+  const actual = await vi.importActual<typeof import('../domains/meals/mealPlansApi')>(
+    '../domains/meals/mealPlansApi'
+  );
+  return { ...actual, listMealPlans: (...args: [string]) => mockListMealPlans(...args) };
+});
+vi.mock('../domains/meals/mealLogApi', () => ({
+  getMealLog: (...args: [string]) => mockGetMealLog(...args),
+}));
 
 const mockGetSleepLog = vi.fn((..._args: unknown[]) => Promise.resolve({ date: '', bedtime: '', wakeTime: '' }));
 const mockListGoals = vi.fn((..._args: unknown[]) => Promise.resolve([] as Goal[]));
@@ -73,6 +117,14 @@ describe('useDashboardData', () => {
     mockListBills.mockReset();
     mockListGroceryItems.mockReset();
     mockListCustomReminders.mockReset().mockResolvedValue([]);
+    mockListWorkoutRoutines.mockReset().mockResolvedValue([]);
+    mockListWorkoutLogEntries.mockReset().mockResolvedValue([]);
+    mockListLearningPlans.mockReset().mockResolvedValue([]);
+    mockListLearningLogEntries.mockReset().mockResolvedValue([]);
+    mockListHealthPlans.mockReset().mockResolvedValue([]);
+    mockListWeightEntries.mockReset().mockResolvedValue([]);
+    mockListMealPlans.mockReset().mockResolvedValue([]);
+    mockGetMealLog.mockReset().mockResolvedValue({ date: '', entries: [] });
   });
 
   it('loads completion, history, chores, bills, and groceries, then computes streak, due items, and day health', async () => {
@@ -187,5 +239,32 @@ describe('useDashboardData', () => {
       { id: 'g1', title: 'Run a 10k', targetDate: '2026-12-01', status: 'active', milestones: [] },
     ]);
     expect(result.current.weeklyReview).toBeNull();
+  });
+
+  it('lists a due-today workout routine when nothing has been logged today, and drops it once a session is logged', async () => {
+    mockGetCompletion.mockResolvedValue({ date: '2026-08-05', workout: false, learning: false, chores: {} });
+    mockListRecentCompletions.mockResolvedValue([]);
+    mockListChores.mockResolvedValue([]);
+    mockListBills.mockResolvedValue([]);
+    mockListGroceryItems.mockResolvedValue([]);
+    mockListWorkoutRoutines.mockResolvedValue([
+      { id: 'w1', name: 'Push Day', exercises: [], cadence: 'daily' },
+    ]);
+
+    const { result: withoutLog } = renderHook(() => useDashboardData('user1'));
+    await waitFor(() => expect(withoutLog.current.loading).toBe(false));
+    expect(withoutLog.current.dueItems).toEqual(
+      expect.arrayContaining([{ id: 'w1', label: 'Push Day', domain: 'workout' }])
+    );
+
+    mockListWorkoutLogEntries.mockResolvedValue([
+      { id: 's1', date: '2026-08-05', moduleName: 'Push Day', exercises: [] },
+    ]);
+
+    const { result: withLog } = renderHook(() => useDashboardData('user1'));
+    await waitFor(() => expect(withLog.current.loading).toBe(false));
+    expect(withLog.current.dueItems).not.toEqual(
+      expect.arrayContaining([{ id: 'w1', label: 'Push Day', domain: 'workout' }])
+    );
   });
 });
