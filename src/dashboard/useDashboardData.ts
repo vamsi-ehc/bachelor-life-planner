@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getCompletion, listRecentCompletions } from '../domains/shared/completionsApi';
 import { listChores, isChoreDueToday } from '../domains/chores/choresApi';
+import { listCustomReminders, isCustomReminderDueToday } from '../domains/reminders/remindersApi';
 import { listBills } from '../domains/finances/billsApi';
 import { listGroceryItems } from '../domains/meals/groceryApi';
 import { getSleepLog } from '../domains/health/sleepApi';
@@ -8,6 +9,7 @@ import { listGoals } from '../domains/goals/goalsApi';
 import { getWeeklyReview } from '../domains/goals/weeklyReviewApi';
 import {
   ChoreConfig,
+  CustomReminder,
   DailyCompletion,
   DueItem,
   Bill,
@@ -20,6 +22,7 @@ import { todayId, dayOfWeek, dayOfMonth, daysInMonth, weekId } from '../domains/
 import {
   computeStreak,
   computeDueItems,
+  computeReminderDueItems,
   computeDayHealth,
   computeDayHealthHistory,
   computeBillDueItems,
@@ -37,8 +40,10 @@ export interface DashboardData {
   chores: ChoreConfig[];
   bills: Bill[];
   groceryItems: GroceryItem[];
+  reminders: CustomReminder[];
   dueItems: DueItem[];
   dueTodayChoreIds: string[];
+  dueTodayReminderIds: string[];
   streak: number;
   dayHealth: number;
   healthHistory: DayHealthPoint[];
@@ -55,6 +60,7 @@ export function useDashboardData(uid: string): DashboardData {
   const [chores, setChores] = useState<ChoreConfig[]>([]);
   const [bills, setBills] = useState<Bill[]>([]);
   const [groceryItems, setGroceryItems] = useState<GroceryItem[]>([]);
+  const [reminders, setReminders] = useState<CustomReminder[]>([]);
   const [sleepLog, setSleepLog] = useState<SleepLog | null>(null);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [weeklyReview, setWeeklyReview] = useState<WeeklyReview | null>(null);
@@ -66,16 +72,18 @@ export function useDashboardData(uid: string): DashboardData {
       listChores(uid),
       listBills(uid),
       listGroceryItems(uid),
+      listCustomReminders(uid),
       getSleepLog(uid),
       listGoals(uid),
       getWeeklyReview(uid, weekId(todayId())),
     ])
-      .then(([todayCompletion, recentHistory, choreList, billList, groceryList, sleep, goalList, review]) => {
+      .then(([todayCompletion, recentHistory, choreList, billList, groceryList, reminderList, sleep, goalList, review]) => {
         setCompletion(todayCompletion);
         setHistory(recentHistory);
         setChores(choreList);
         setBills(billList);
         setGroceryItems(groceryList);
+        setReminders(reminderList);
         setSleepLog(sleep);
         setGoals(goalList);
         setWeeklyReview(review);
@@ -95,8 +103,10 @@ export function useDashboardData(uid: string): DashboardData {
       chores: [],
       bills: [],
       groceryItems: [],
+      reminders: [],
       dueItems: [],
       dueTodayChoreIds: [],
+      dueTodayReminderIds: [],
       streak: 0,
       dayHealth: 0,
       healthHistory: [],
@@ -109,16 +119,18 @@ export function useDashboardData(uid: string): DashboardData {
   const dow = dayOfWeek(todayId());
   const domNow = dayOfMonth(todayId());
   const dimNow = daysInMonth(todayId());
+  const dueTodayReminderIds = reminders.filter((r) => isCustomReminderDueToday(r, dow)).map((r) => r.id);
   const dueItems = [
     ...computeDueItems(chores, completion, dow),
+    ...computeReminderDueItems(reminders, completion, dow),
     ...computeBillDueItems(bills, domNow, dimNow),
     ...computeGroceryDueItem(groceryItems),
     ...computeWeeklyReviewDueItem(dow, weeklyReview),
   ];
   const dueTodayChoreIds = chores.filter((c) => isChoreDueToday(c, dow)).map((c) => c.id);
   const streak = computeStreak(history);
-  const dayHealth = computeDayHealth(completion, dueTodayChoreIds);
-  const healthHistory = computeDayHealthHistory(history, chores);
+  const dayHealth = computeDayHealth(completion, dueTodayChoreIds, dueTodayReminderIds);
+  const healthHistory = computeDayHealthHistory(history, chores, reminders);
 
   return {
     loading,
@@ -127,8 +139,10 @@ export function useDashboardData(uid: string): DashboardData {
     chores,
     bills,
     groceryItems,
+    reminders,
     dueItems,
     dueTodayChoreIds,
+    dueTodayReminderIds,
     streak,
     dayHealth,
     healthHistory,

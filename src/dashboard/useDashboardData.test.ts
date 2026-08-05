@@ -7,6 +7,7 @@ const mockListRecentCompletions = vi.fn();
 const mockListChores = vi.fn();
 const mockListBills = vi.fn();
 const mockListGroceryItems = vi.fn();
+const mockListCustomReminders = vi.fn();
 
 vi.mock('firebase/firestore', () => ({
   collection: (..._args: unknown[]) => ({}),
@@ -41,6 +42,12 @@ vi.mock('../domains/finances/billsApi', async () => {
 vi.mock('../domains/meals/groceryApi', () => ({
   listGroceryItems: (...args: [string]) => mockListGroceryItems(...args),
 }));
+vi.mock('../domains/reminders/remindersApi', async () => {
+  const actual = await vi.importActual<typeof import('../domains/reminders/remindersApi')>(
+    '../domains/reminders/remindersApi'
+  );
+  return { ...actual, listCustomReminders: (...args: [string]) => mockListCustomReminders(...args) };
+});
 
 const mockGetSleepLog = vi.fn((..._args: unknown[]) => Promise.resolve({ date: '', bedtime: '', wakeTime: '' }));
 const mockListGoals = vi.fn((..._args: unknown[]) => Promise.resolve([] as Goal[]));
@@ -65,6 +72,7 @@ describe('useDashboardData', () => {
     mockListChores.mockReset();
     mockListBills.mockReset();
     mockListGroceryItems.mockReset();
+    mockListCustomReminders.mockReset().mockResolvedValue([]);
   });
 
   it('loads completion, history, chores, bills, and groceries, then computes streak, due items, and day health', async () => {
@@ -107,6 +115,37 @@ describe('useDashboardData', () => {
       ])
     );
     expect(result.current.dayHealth).toBe(75);
+  });
+
+  it('loads custom reminders and folds due ones into dueItems and dayHealth', async () => {
+    mockGetCompletion.mockResolvedValue({
+      date: '2026-07-20',
+      workout: true,
+      learning: true,
+      chores: {},
+      reminders: {},
+    });
+    mockListRecentCompletions.mockResolvedValue([]);
+    mockListChores.mockResolvedValue([]);
+    mockListBills.mockResolvedValue([]);
+    mockListGroceryItems.mockResolvedValue([]);
+    mockListCustomReminders.mockResolvedValue([
+      { id: 'r1', label: 'Drink water', time: '10:00', cadence: 'daily' },
+    ]);
+
+    const { result } = renderHook(() => useDashboardData('user1'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(mockListCustomReminders).toHaveBeenCalledWith('user1');
+    expect(result.current.reminders).toEqual([
+      { id: 'r1', label: 'Drink water', time: '10:00', cadence: 'daily' },
+    ]);
+    expect(result.current.dueTodayReminderIds).toEqual(['r1']);
+    expect(result.current.dueItems).toEqual(
+      expect.arrayContaining([{ id: 'r1', label: 'Drink water', domain: 'reminders' }])
+    );
+    // 2 base tasks + 1 due reminder = 3; workout+learning done, reminder not = 2/3 = 67%
+    expect(result.current.dayHealth).toBe(67);
   });
 
   it('sets an error and clears loading when a read fails', async () => {
