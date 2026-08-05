@@ -7,6 +7,9 @@ const mockGetCompletion = vi.fn();
 const mockSetWorkoutDone = vi.fn().mockResolvedValue(undefined);
 const mockListEntries = vi.fn();
 const mockAddSession = vi.fn().mockResolvedValue('session1');
+const mockListWorkoutRoutines = vi.fn();
+const mockSaveWorkoutRoutine = vi.fn().mockResolvedValue(undefined);
+const mockDeleteWorkoutRoutine = vi.fn().mockResolvedValue(undefined);
 
 vi.mock('../shared/completionsApi', () => ({
   getCompletion: (...args: [string]) => mockGetCompletion(...args),
@@ -16,6 +19,15 @@ vi.mock('./workoutApi', () => ({
   listWorkoutLogEntries: (...args: [string]) => mockListEntries(...args),
   addWorkoutSession: (...args: [string, unknown]) => mockAddSession(...args),
 }));
+vi.mock('./workoutRoutinesApi', async () => {
+  const actual = await vi.importActual<typeof import('./workoutRoutinesApi')>('./workoutRoutinesApi');
+  return {
+    ...actual,
+    listWorkoutRoutines: (...args: [string]) => mockListWorkoutRoutines(...args),
+    saveWorkoutRoutine: (...args: [string, unknown]) => mockSaveWorkoutRoutine(...args),
+    deleteWorkoutRoutine: (...args: [string, string]) => mockDeleteWorkoutRoutine(...args),
+  };
+});
 vi.mock('../../tutorials/useTutorial', () => ({
   useTutorial: () => ({ isOpen: false, dismiss: vi.fn() }),
 }));
@@ -36,6 +48,9 @@ describe('WorkoutScreen', () => {
     mockSetWorkoutDone.mockClear();
     mockListEntries.mockReset();
     mockAddSession.mockClear().mockResolvedValue('session1');
+    mockListWorkoutRoutines.mockReset().mockResolvedValue([]);
+    mockSaveWorkoutRoutine.mockClear();
+    mockDeleteWorkoutRoutine.mockClear();
   });
 
   it('punches in for today', async () => {
@@ -171,6 +186,57 @@ describe('WorkoutScreen', () => {
 
     await waitFor(() =>
       expect(screen.getByText('Something went wrong: offline')).toBeInTheDocument()
+    );
+  });
+
+  it('adds a new workout routine with weekday repeat', async () => {
+    mockGetCompletion.mockResolvedValue({ date: '2026-08-05', workout: false, learning: false, chores: {} });
+    mockListEntries.mockResolvedValue([]);
+    mockListWorkoutRoutines.mockResolvedValue([]);
+
+    renderScreen();
+    await waitFor(() => expect(mockListWorkoutRoutines).toHaveBeenCalled());
+
+    const user = userEvent.setup();
+    await user.type(screen.getByPlaceholderText('Routine name (e.g. Push Day)'), 'Push Day');
+    await user.selectOptions(screen.getByDisplayValue('Daily'), 'weekly');
+    await user.click(screen.getByRole('checkbox', { name: 'Wed' }));
+    await user.type(screen.getByPlaceholderText('Routine exercise name'), 'Bench Press');
+    await user.click(screen.getByRole('button', { name: 'Add routine' }));
+
+    expect(mockSaveWorkoutRoutine).toHaveBeenCalledWith(
+      'user1',
+      expect.objectContaining({
+        name: 'Push Day',
+        cadence: 'weekly',
+        weeklyDays: [3],
+        exercises: [expect.objectContaining({ name: 'Bench Press' })],
+      })
+    );
+  });
+
+  it('shows a due-today badge for a routine scheduled today and awards a streak when a session is logged', async () => {
+    mockGetCompletion.mockResolvedValue({ date: '2026-08-05', workout: false, learning: false, chores: {} });
+    mockListEntries.mockResolvedValue([]);
+    mockListWorkoutRoutines.mockResolvedValue([
+      { id: 'w1', name: 'Push Day', exercises: [{ id: 'e1', name: 'Bench Press' }], cadence: 'daily', points: 0, currentStreak: 0 },
+    ]);
+
+    renderScreen();
+    await waitFor(() => expect(screen.getByText(/Push Day/)).toBeInTheDocument());
+    expect(screen.getByText('Due today')).toBeInTheDocument();
+
+    const user = userEvent.setup();
+    await user.type(screen.getByPlaceholderText('Workout name (e.g. Chest Workout)'), 'Chest Workout');
+    await user.type(screen.getByPlaceholderText('Exercise name'), 'Bench Press');
+    await user.type(screen.getByPlaceholderText('Reps'), '10');
+    await user.click(screen.getByRole('button', { name: 'Save workout' }));
+
+    await waitFor(() =>
+      expect(mockSaveWorkoutRoutine).toHaveBeenCalledWith(
+        'user1',
+        expect.objectContaining({ id: 'w1', points: 1, currentStreak: 1 })
+      )
     );
   });
 });

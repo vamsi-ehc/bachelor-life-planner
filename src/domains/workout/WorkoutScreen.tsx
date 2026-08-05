@@ -1,12 +1,20 @@
 import { useEffect, useState, FormEvent } from 'react';
 import { getCompletion, setWorkoutDone } from '../shared/completionsApi';
 import { listWorkoutLogEntries, addWorkoutSession } from './workoutApi';
-import { WorkoutLogEntry, WorkoutSession, DailyCompletion, isLegacyWorkoutEntry } from '../shared/types';
-import { todayId } from '../shared/dateUtils';
+import {
+  listWorkoutRoutines,
+  saveWorkoutRoutine,
+  deleteWorkoutRoutine,
+  isWorkoutRoutineDueToday,
+} from './workoutRoutinesApi';
+import { applyCompletion } from '../shared/streakLogic';
+import { WeekdayPicker, weekdaySummary } from '../shared/WeekdayPicker';
+import { WorkoutLogEntry, WorkoutSession, WorkoutRoutine, DailyCompletion, isLegacyWorkoutEntry } from '../shared/types';
+import { dayOfWeek, todayId } from '../shared/dateUtils';
 import { PunchInButton } from '../../components/PunchInButton';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { PageCard } from '../../components/PageCard';
-import { fieldClass, buttonClass } from '../../components/ui';
+import { fieldClass, buttonClass, sectionLabelClass } from '../../components/ui';
 import { useTutorial } from '../../tutorials/useTutorial';
 import { TutorialStoryboard } from '../../tutorials/TutorialStoryboard';
 import { tutorialContent } from '../../tutorials/tutorialContent';
@@ -33,6 +41,11 @@ export function WorkoutScreen({ uid }: { uid: string }) {
   const [draftExercises, setDraftExercises] = useState<DraftExercise[]>([emptyExercise()]);
   const [formError, setFormError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [routines, setRoutines] = useState<WorkoutRoutine[]>([]);
+  const [routineName, setRoutineName] = useState('');
+  const [routineCadence, setRoutineCadence] = useState<'daily' | 'weekly'>('daily');
+  const [routineWeeklyDays, setRoutineWeeklyDays] = useState<number[]>([]);
+  const [routineExerciseNames, setRoutineExerciseNames] = useState<string[]>(['']);
   const tutorial = useTutorial(uid, 'workout');
 
   useEffect(() => {
@@ -41,6 +54,7 @@ export function WorkoutScreen({ uid }: { uid: string }) {
     };
     getCompletion(uid).then(setCompletion).catch(handleError);
     listWorkoutLogEntries(uid).then(setEntries).catch(handleError);
+    listWorkoutRoutines(uid).then(setRoutines).catch(handleError);
   }, [uid]);
 
   async function handlePunchIn() {
@@ -109,6 +123,39 @@ export function WorkoutScreen({ uid }: { uid: string }) {
     setEntries((prev) => [{ id, ...session }, ...prev]);
     setModuleName('');
     setDraftExercises([emptyExercise()]);
+
+    const today = todayId();
+    const dow = dayOfWeek(today);
+    const dueRoutines = routines.filter((r) => isWorkoutRoutineDueToday(r, dow) && r.lastCompletedDate !== today);
+    for (const routine of dueRoutines) {
+      const updated = { ...routine, ...applyCompletion(routine, today) };
+      await saveWorkoutRoutine(uid, updated);
+      setRoutines((prev) => prev.map((r) => (r.id === routine.id ? updated : r)));
+    }
+  }
+
+  async function handleAddRoutine(e: FormEvent) {
+    e.preventDefault();
+    const exerciseNames = routineExerciseNames.map((n) => n.trim()).filter(Boolean);
+    if (!routineName.trim() || exerciseNames.length === 0) return;
+    const routine: WorkoutRoutine = {
+      id: crypto.randomUUID(),
+      name: routineName.trim(),
+      exercises: exerciseNames.map((name) => ({ id: crypto.randomUUID(), name })),
+      cadence: routineCadence,
+      ...(routineCadence === 'weekly' ? { weeklyDays: routineWeeklyDays } : {}),
+    };
+    await saveWorkoutRoutine(uid, routine);
+    setRoutines((prev) => [...prev, routine]);
+    setRoutineName('');
+    setRoutineCadence('daily');
+    setRoutineWeeklyDays([]);
+    setRoutineExerciseNames(['']);
+  }
+
+  async function handleRemoveRoutine(routineId: string) {
+    await deleteWorkoutRoutine(uid, routineId);
+    setRoutines((prev) => prev.filter((r) => r.id !== routineId));
   }
 
   if (error) {
@@ -125,6 +172,78 @@ export function WorkoutScreen({ uid }: { uid: string }) {
       <div id="workout-punchin">
         <PunchInButton done={completion?.workout ?? false} onToggle={handlePunchIn} />
       </div>
+      <section id="workout-routines" className="flex flex-col gap-3">
+        <p className={sectionLabelClass}>Routines</p>
+        <ul className="flex flex-col gap-2">
+          {routines.map((routine) => {
+            const dueToday = isWorkoutRoutineDueToday(routine, dayOfWeek(todayId()));
+            return (
+              <li key={routine.id} className="flex items-center gap-2.5 border-b border-line last:border-b-0 pb-2">
+                <span className="text-sm flex-1">
+                  {routine.name} — {routine.exercises.map((ex) => ex.name).join(', ')}
+                </span>
+                <span className="font-mono text-xs text-muted">
+                  {routine.cadence === 'daily' ? 'Daily' : weekdaySummary(routine.weeklyDays)}
+                </span>
+                <span className="font-mono text-xs text-muted">
+                  🔥{routine.currentStreak ?? 0} · {routine.points ?? 0} pts
+                </span>
+                {dueToday && <span className="font-mono text-xs text-primary">Due today</span>}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveRoutine(routine.id)}
+                  className="text-xs text-muted hover:text-ink"
+                >
+                  Remove
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+        <form id="routine-form" onSubmit={handleAddRoutine} className="flex flex-col gap-2">
+          <input
+            type="text"
+            placeholder="Routine name (e.g. Push Day)"
+            value={routineName}
+            onChange={(e) => setRoutineName(e.target.value)}
+            className={fieldClass}
+          />
+          {routineExerciseNames.map((name, i) => (
+            <input
+              key={i}
+              type="text"
+              placeholder="Routine exercise name"
+              value={name}
+              onChange={(e) =>
+                setRoutineExerciseNames((prev) => prev.map((n, idx) => (idx === i ? e.target.value : n)))
+              }
+              className={fieldClass}
+            />
+          ))}
+          <button
+            type="button"
+            onClick={() => setRoutineExerciseNames((prev) => [...prev, ''])}
+            className="text-sm text-primary self-start"
+          >
+            Add routine exercise
+          </button>
+          <select
+            value={routineCadence}
+            onChange={(e) => setRoutineCadence(e.target.value as 'daily' | 'weekly')}
+            className={fieldClass}
+          >
+            <option value="daily">Daily</option>
+            <option value="weekly">Specific weekdays</option>
+          </select>
+          {routineCadence === 'weekly' && (
+            <WeekdayPicker value={routineWeeklyDays} onChange={setRoutineWeeklyDays} />
+          )}
+          <button type="submit" className={buttonClass}>
+            Add routine
+          </button>
+        </form>
+      </section>
+      <hr className="border-line" />
       <form id="workout-form" onSubmit={handleSave} className="flex flex-col gap-3">
         <input
           type="text"
