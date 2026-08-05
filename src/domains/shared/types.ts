@@ -106,4 +106,5 @@ export interface ReminderConfig {
   learningTime: string;
   weeklyReviewTime: string;
   timezone: string;
+  notificationsEnabled: boolean;
 }

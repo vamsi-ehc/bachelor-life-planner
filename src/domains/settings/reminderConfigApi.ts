@@ -8,6 +8,7 @@ export const DEFAULT_REMINDER_CONFIG: ReminderConfig = {
   learningTime: '20:00',
   weeklyReviewTime: '18:00',
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  notificationsEnabled: true,
 };
 
 function reminderConfigDocRef(uid: string) {
@@ -24,6 +25,7 @@ export async function getReminderConfig(uid: string): Promise<ReminderConfig> {
     learningTime: data.learningTime ?? DEFAULT_REMINDER_CONFIG.learningTime,
     weeklyReviewTime: data.weeklyReviewTime ?? DEFAULT_REMINDER_CONFIG.weeklyReviewTime,
     timezone: data.timezone ?? DEFAULT_REMINDER_CONFIG.timezone,
+    notificationsEnabled: data.notificationsEnabled ?? DEFAULT_REMINDER_CONFIG.notificationsEnabled,
   };
 }
 
@@ -34,5 +36,6 @@ export async function saveReminderConfig(uid: string, config: ReminderConfig): P
     learningTime: config.learningTime,
     weeklyReviewTime: config.weeklyReviewTime,
     timezone: config.timezone,
+    notificationsEnabled: config.notificationsEnabled,
   });
 }

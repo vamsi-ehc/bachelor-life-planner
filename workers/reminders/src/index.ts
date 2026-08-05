@@ -16,6 +16,7 @@ interface ReminderConfig {
   learningTime: string;
   weeklyReviewTime: string;
   timezone: string;
+  notificationsEnabled: boolean;
 }
 
 const DEFAULT_REMINDER_CONFIG: ReminderConfig = {
@@ -24,6 +25,7 @@ const DEFAULT_REMINDER_CONFIG: ReminderConfig = {
   learningTime: '20:00',
   weeklyReviewTime: '18:00',
   timezone: 'UTC',
+  notificationsEnabled: true,
 };
 
 const MORNING_CHECK_TIME = '07:30';
@@ -52,6 +54,10 @@ function decodeReminderConfig(data: Record<string, unknown> | null): ReminderCon
     weeklyReviewTime:
       typeof data.weeklyReviewTime === 'string' ? data.weeklyReviewTime : DEFAULT_REMINDER_CONFIG.weeklyReviewTime,
     timezone: typeof data.timezone === 'string' ? data.timezone : DEFAULT_REMINDER_CONFIG.timezone,
+    notificationsEnabled:
+      typeof data.notificationsEnabled === 'boolean'
+        ? data.notificationsEnabled
+        : DEFAULT_REMINDER_CONFIG.notificationsEnabled,
   };
 }
 
@@ -76,6 +82,7 @@ export async function runReminderCheckForUser(
 
   const configData = await getDocument(projectId, accessToken, `${base}/config/reminders`);
   const config = decodeReminderConfig(configData);
+  if (!config.notificationsEnabled) return;
 
   const jobs: PushJob[] = [];
 

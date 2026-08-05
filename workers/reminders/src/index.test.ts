@@ -23,7 +23,7 @@ const env: Env = {
   FIREBASE_PROJECT_ID: 'proj1',
 };
 
-const defaultConfig = { workoutTime: '06:45', dinnerTime: '19:00', learningTime: '20:00', weeklyReviewTime: '18:00', timezone: 'UTC' };
+const defaultConfig = { workoutTime: '06:45', dinnerTime: '19:00', learningTime: '20:00', weeklyReviewTime: '18:00', timezone: 'UTC', notificationsEnabled: true };
 
 describe('runReminderCheck', () => {
   beforeEach(() => {
@@ -58,6 +58,22 @@ describe('runReminderCheck', () => {
   it('does nothing when no users are registered', async () => {
     mockListDocuments.mockResolvedValue([]);
     mockGetDocument.mockResolvedValue(null);
+
+    await runReminderCheck(env, new Date('2026-07-23T06:46:00Z'));
+
+    expect(mockSendPush).not.toHaveBeenCalled();
+  });
+
+  it('sends no pushes for a user who has disabled notifications', async () => {
+    mockListDocuments.mockImplementation(async (_p: string, _t: string, path: string) => {
+      if (path === 'users') return [{ id: 'uid1', data: {} }];
+      if (path === 'users/uid1/fcmTokens') return [{ id: 'tok-a', data: { token: 'tok-a' } }];
+      return [];
+    });
+    mockGetDocument.mockImplementation(async (_p: string, _t: string, path: string) => {
+      if (path === 'users/uid1/config/reminders') return { ...defaultConfig, notificationsEnabled: false };
+      return null;
+    });
 
     await runReminderCheck(env, new Date('2026-07-23T06:46:00Z'));
 

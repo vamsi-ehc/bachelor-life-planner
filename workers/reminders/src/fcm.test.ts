@@ -22,7 +22,12 @@ describe('sendPush', () => {
     const [url, options] = fetchMock.mock.calls[0];
     expect(url).toBe('https://fcm.googleapis.com/v1/projects/proj1/messages:send');
     expect(JSON.parse(options.body)).toEqual({
-      message: { token: 'device-token', notification: { title: 'Workout time', body: "It's time for your workout." } },
+      message: {
+        token: 'device-token',
+        notification: { title: 'Workout time', body: "It's time for your workout." },
+        android: { priority: 'high' },
+        apns: { headers: { 'apns-priority': '10' } },
+      },
     });
   });
 

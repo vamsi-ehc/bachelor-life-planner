@@ -20,6 +20,8 @@ export async function sendPush(params: SendPushParams): Promise<SendPushResult> 
       message: {
         token: params.token,
         notification: { title: params.title, body: params.body },
+        android: { priority: 'high' },
+        apns: { headers: { 'apns-priority': '10' } },
         ...(params.tag ? { data: { tag: params.tag } } : {}),
       },
     }),
