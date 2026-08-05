@@ -27,6 +27,7 @@ import {
   setWorkoutDone,
   setLearningDone,
   setChoreDone,
+  setReminderDone,
 } from './completionsApi';
 
 describe('completionsApi', () => {
@@ -39,11 +40,17 @@ describe('completionsApi', () => {
   it('returns an empty completion when no doc exists', async () => {
     mockGetDoc.mockResolvedValue({ exists: () => false });
     const result = await getCompletion('user1', '2026-07-20');
-    expect(result).toEqual({ date: '2026-07-20', workout: false, learning: false, chores: {} });
+    expect(result).toEqual({ date: '2026-07-20', workout: false, learning: false, chores: {}, reminders: {} });
   });
 
   it('returns the stored completion when a doc exists', async () => {
-    const stored = { date: '2026-07-20', workout: true, learning: false, chores: { c1: true } };
+    const stored = {
+      date: '2026-07-20',
+      workout: true,
+      learning: false,
+      chores: { c1: true },
+      reminders: { r1: true },
+    };
     mockGetDoc.mockResolvedValue({ exists: () => true, data: () => stored });
     const result = await getCompletion('user1', '2026-07-20');
     expect(result).toEqual(stored);
@@ -52,10 +59,11 @@ describe('completionsApi', () => {
   it('fills in defaults for fields missing from a partially-written doc', async () => {
     // Realistic case: setWorkoutDone's merge:true write only ever sets
     // {date, workout}, so a doc touched by just one setter has no
-    // `learning`/`chores` fields at all until another setter writes them.
+    // `learning`/`chores`/`reminders` fields at all until another setter
+    // writes them.
     mockGetDoc.mockResolvedValue({ exists: () => true, data: () => ({ date: '2026-07-20', workout: true }) });
     const result = await getCompletion('user1', '2026-07-20');
-    expect(result).toEqual({ date: '2026-07-20', workout: true, learning: false, chores: {} });
+    expect(result).toEqual({ date: '2026-07-20', workout: true, learning: false, chores: {}, reminders: {} });
   });
 
   it('setWorkoutDone merges the workout flag', async () => {
@@ -81,6 +89,15 @@ describe('completionsApi', () => {
     expect(mockSetDoc).toHaveBeenCalledWith(
       expect.anything(),
       { date: '2026-07-20', chores: { c1: true } },
+      { merge: true }
+    );
+  });
+
+  it('setReminderDone merges a single reminder flag', async () => {
+    await setReminderDone('user1', 'r1', true, '2026-07-20');
+    expect(mockSetDoc).toHaveBeenCalledWith(
+      expect.anything(),
+      { date: '2026-07-20', reminders: { r1: true } },
       { merge: true }
     );
   });

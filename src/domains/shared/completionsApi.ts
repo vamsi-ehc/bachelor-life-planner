@@ -15,6 +15,7 @@ export async function getCompletion(uid: string, date: string = todayId()): Prom
     workout: data.workout ?? false,
     learning: data.learning ?? false,
     chores: data.chores ?? {},
+    reminders: data.reminders ?? {},
   };
 }
 
@@ -43,4 +44,13 @@ export async function setChoreDone(
   date: string = todayId()
 ): Promise<void> {
   await setDoc(completionDocRef(uid, date), { date, chores: { [choreId]: done } }, { merge: true });
+}
+
+export async function setReminderDone(
+  uid: string,
+  reminderId: string,
+  done: boolean,
+  date: string = todayId()
+): Promise<void> {
+  await setDoc(completionDocRef(uid, date), { date, reminders: { [reminderId]: done } }, { merge: true });
 }
