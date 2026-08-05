@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { getReminderConfig } from '../domains/settings/reminderConfigApi';
+import { listCustomReminders, isCustomReminderDueToday } from '../domains/reminders/remindersApi';
 import { ReminderConfig } from '../domains/shared/types';
 import { localDateId, todayFireTime } from './localReminderScheduler';
 
@@ -41,30 +42,38 @@ export function useLocalReminderScheduler(uid: string | null): void {
     let cancelled = false;
     const timeoutIds: ReturnType<typeof setTimeout>[] = [];
 
-    getReminderConfig(uid).then((config) => {
+    Promise.all([getReminderConfig(uid), listCustomReminders(uid)]).then(([config, customReminders]) => {
       if (cancelled) return;
       const now = new Date();
       const dateId = localDateId(now);
 
-      for (const reminder of LOCAL_REMINDERS) {
-        if (reminder.weekdayOnly !== undefined && now.getDay() !== reminder.weekdayOnly) continue;
-        if (localStorage.getItem(shownKey(reminder.key, dateId))) continue;
-
-        const fireAt = todayFireTime(reminder.getTime(config), now);
-        if (!fireAt) continue;
+      function scheduleIfDue(key: string, time: string, title: string, body: string) {
+        if (localStorage.getItem(shownKey(key, dateId))) return;
+        const fireAt = todayFireTime(time, now);
+        if (!fireAt) return;
 
         const delay = fireAt.getTime() - now.getTime();
         const timeoutId = setTimeout(() => {
-          localStorage.setItem(shownKey(reminder.key, dateId), '1');
+          localStorage.setItem(shownKey(key, dateId), '1');
           navigator.serviceWorker.ready.then((registration) => {
-            registration.showNotification(reminder.title, {
-              body: reminder.body,
-              tag: `${reminder.key}-${dateId}`,
+            registration.showNotification(title, {
+              body,
+              tag: `${key}-${dateId}`,
               icon: '/icons/icon-192.png',
             });
           });
         }, delay);
         timeoutIds.push(timeoutId);
+      }
+
+      for (const reminder of LOCAL_REMINDERS) {
+        if (reminder.weekdayOnly !== undefined && now.getDay() !== reminder.weekdayOnly) continue;
+        scheduleIfDue(reminder.key, reminder.getTime(config), reminder.title, reminder.body);
+      }
+
+      for (const reminder of customReminders) {
+        if (!isCustomReminderDueToday(reminder, now.getDay())) continue;
+        scheduleIfDue(reminder.id, reminder.time, 'Reminder', reminder.label);
       }
     });
 
