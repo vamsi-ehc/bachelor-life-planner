@@ -6,6 +6,7 @@ import {
   isCustomReminderDueToday,
 } from './remindersApi';
 import { getCompletion, setReminderDone } from '../shared/completionsApi';
+import { applyCompletion } from '../shared/streakLogic';
 import { CustomReminder, DailyCompletion } from '../shared/types';
 import { dayOfWeek, todayId } from '../shared/dateUtils';
 import { ScreenHeader } from '../../components/ScreenHeader';
@@ -40,11 +41,15 @@ export function RemindersScreen({ uid }: { uid: string }) {
     getCompletion(uid).then(setCompletion).catch(handleError);
   }, [uid]);
 
-  async function handleToggle(reminderId: string, done: boolean) {
-    await setReminderDone(uid, reminderId, done);
+  async function handleToggle(reminder: CustomReminder, done: boolean) {
+    await setReminderDone(uid, reminder, done);
     setCompletion((prev) =>
-      prev ? { ...prev, reminders: { ...prev.reminders, [reminderId]: done } } : prev
+      prev ? { ...prev, reminders: { ...prev.reminders, [reminder.id]: done } } : prev
     );
+    if (done && reminder.lastCompletedDate !== todayId()) {
+      const updated = applyCompletion(reminder, todayId());
+      setReminders((prev) => prev.map((r) => (r.id === reminder.id ? { ...r, ...updated } : r)));
+    }
   }
 
   function toggleWeekday(day: number) {
@@ -98,12 +103,15 @@ export function RemindersScreen({ uid }: { uid: string }) {
                 aria-label={reminder.label}
                 checked={done}
                 disabled={!dueToday}
-                onChange={(e) => handleToggle(reminder.id, e.target.checked)}
+                onChange={(e) => handleToggle(reminder, e.target.checked)}
                 className="accent-primary w-4 h-4"
               />
               <span className="text-sm flex-1">{reminder.label}</span>
               <span className="font-mono text-xs text-muted">{reminder.time}</span>
               <span className="font-mono text-xs text-muted">{cadenceSummary(reminder)}</span>
+              <span className="font-mono text-xs text-muted">
+                🔥{reminder.currentStreak ?? 0} · {reminder.points ?? 0} pts
+              </span>
               {!dueToday && <span className="font-mono text-xs text-muted">not due today</span>}
               <button
                 type="button"

@@ -20,7 +20,7 @@ vi.mock('./remindersApi', async () => {
 });
 vi.mock('../shared/completionsApi', () => ({
   getCompletion: (...args: [string]) => mockGetCompletion(...args),
-  setReminderDone: (...args: [string, string, boolean]) => mockSetReminderDone(...args),
+  setReminderDone: (...args: [string, unknown, boolean]) => mockSetReminderDone(...args),
 }));
 vi.mock('../../tutorials/useTutorial', () => ({
   useTutorial: () => ({ isOpen: false, dismiss: vi.fn() }),
@@ -64,7 +64,28 @@ describe('RemindersScreen', () => {
     const user = userEvent.setup();
     await user.click(screen.getByRole('checkbox', { name: /Drink water/ }));
 
-    expect(mockSetReminderDone).toHaveBeenCalledWith('user1', 'r1', true);
+    expect(mockSetReminderDone).toHaveBeenCalledWith(
+      'user1',
+      { id: 'r1', label: 'Drink water', time: '10:00', cadence: 'daily' },
+      true
+    );
+  });
+
+  it('shows the streak and points badge for a reminder', async () => {
+    mockListCustomReminders.mockResolvedValue([
+      { id: 'r1', label: 'Drink water', time: '10:00', cadence: 'daily', points: 7, currentStreak: 3 },
+    ]);
+    mockGetCompletion.mockResolvedValue({
+      date: '2026-08-05',
+      workout: false,
+      learning: false,
+      chores: {},
+      reminders: {},
+    });
+
+    renderScreen();
+
+    await waitFor(() => expect(screen.getByText(/3.*7 pts/)).toBeInTheDocument());
   });
 
   it('adds a new daily reminder', async () => {

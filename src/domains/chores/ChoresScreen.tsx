@@ -1,6 +1,7 @@
 import { useEffect, useState, FormEvent } from 'react';
 import { listChores, saveChore, isChoreDueToday } from './choresApi';
 import { getCompletion, setChoreDone } from '../shared/completionsApi';
+import { applyCompletion } from '../shared/streakLogic';
 import { ChoreConfig, DailyCompletion } from '../shared/types';
 import { dayOfWeek, todayId } from '../shared/dateUtils';
 import { ScreenHeader } from '../../components/ScreenHeader';
@@ -25,11 +26,15 @@ export function ChoresScreen({ uid }: { uid: string }) {
     getCompletion(uid).then(setCompletion).catch(handleError);
   }, [uid]);
 
-  async function handleToggle(choreId: string, done: boolean) {
-    await setChoreDone(uid, choreId, done);
+  async function handleToggle(chore: ChoreConfig, done: boolean) {
+    await setChoreDone(uid, chore, done);
     setCompletion((prev) =>
-      prev ? { ...prev, chores: { ...prev.chores, [choreId]: done } } : prev
+      prev ? { ...prev, chores: { ...prev.chores, [chore.id]: done } } : prev
     );
+    if (done && chore.lastCompletedDate !== todayId()) {
+      const updated = applyCompletion(chore, todayId());
+      setChores((prev) => prev.map((c) => (c.id === chore.id ? { ...c, ...updated } : c)));
+    }
   }
 
   async function handleAddChore(e: FormEvent) {
@@ -69,10 +74,13 @@ export function ChoresScreen({ uid }: { uid: string }) {
                 aria-label={chore.name}
                 checked={done}
                 disabled={!dueToday}
-                onChange={(e) => handleToggle(chore.id, e.target.checked)}
+                onChange={(e) => handleToggle(chore, e.target.checked)}
                 className="accent-primary w-4 h-4"
               />
               <span className="text-sm flex-1">{chore.name}</span>
+              <span className="font-mono text-xs text-muted">
+                🔥{chore.currentStreak ?? 0} · {chore.points ?? 0} pts
+              </span>
               {!dueToday && <span className="font-mono text-xs text-muted">not due today</span>}
             </li>
           );

@@ -1,8 +1,24 @@
-import { ChoreConfig, CustomReminder, DailyCompletion, DueItem, Bill, GroceryItem, WeeklyReview } from '../domains/shared/types';
+import {
+  ChoreConfig,
+  CustomReminder,
+  DailyCompletion,
+  DueItem,
+  Bill,
+  GroceryItem,
+  WeeklyReview,
+  WorkoutRoutine,
+  LearningPlan,
+  HealthPlan,
+  MealPlan,
+} from '../domains/shared/types';
 import { isChoreDueToday } from '../domains/chores/choresApi';
 import { isCustomReminderDueToday } from '../domains/reminders/remindersApi';
 import { isBillDueToday } from '../domains/finances/billsApi';
 import { isWeeklyReviewDue } from '../domains/goals/goalsLogic';
+import { isWorkoutRoutineDueToday } from '../domains/workout/workoutRoutinesApi';
+import { isLearningPlanDueToday } from '../domains/learning/learningPlansApi';
+import { isHealthPlanDueToday } from '../domains/health/healthPlansApi';
+import { isMealPlanDueToday } from '../domains/meals/mealPlansApi';
 import { dayOfWeek } from '../domains/shared/dateUtils';
 
 export function computeStreak(completions: DailyCompletion[]): number {
@@ -37,17 +53,49 @@ export function computeReminderDueItems(
     .map((r) => ({ id: r.id, label: r.label, domain: 'reminders' as const }));
 }
 
+export function computeWorkoutDueItems(routines: WorkoutRoutine[], hasLoggedToday: boolean, dow: number): DueItem[] {
+  if (hasLoggedToday) return [];
+  return routines
+    .filter((r) => isWorkoutRoutineDueToday(r, dow))
+    .map((r) => ({ id: r.id, label: r.name, domain: 'workout' as const }));
+}
+
+export function computeLearningPlanDueItems(plans: LearningPlan[], hasLoggedToday: boolean, dow: number): DueItem[] {
+  if (hasLoggedToday) return [];
+  return plans
+    .filter((p) => isLearningPlanDueToday(p, dow))
+    .map((p) => ({ id: p.id, label: p.topic, domain: 'learning' as const }));
+}
+
+export function computeHealthPlanDueItems(plans: HealthPlan[], hasLoggedToday: boolean, dow: number): DueItem[] {
+  if (hasLoggedToday) return [];
+  return plans
+    .filter((p) => isHealthPlanDueToday(p, dow))
+    .map((p) => ({ id: p.id, label: p.label, domain: 'health' as const }));
+}
+
+export function computeMealPlanDueItems(plans: MealPlan[], hasLoggedToday: boolean, dow: number): DueItem[] {
+  if (hasLoggedToday) return [];
+  return plans
+    .filter((p) => isMealPlanDueToday(p, dow))
+    .map((p) => ({ id: p.id, label: p.name, domain: 'meals' as const }));
+}
+
 export function computeDayHealth(
   completion: DailyCompletion,
   dueTodayChoreIds: string[],
-  dueTodayReminderIds: string[] = []
+  dueTodayReminderIds: string[] = [],
+  dueTodayPlanDomains: { domain: string; ids: string[]; done: boolean }[] = []
 ): number {
-  const totalTasks = 2 + dueTodayChoreIds.length + dueTodayReminderIds.length;
+  const planTaskCount = dueTodayPlanDomains.reduce((sum, d) => sum + d.ids.length, 0);
+  const planDoneCount = dueTodayPlanDomains.reduce((sum, d) => sum + (d.done ? d.ids.length : 0), 0);
+  const totalTasks = 2 + dueTodayChoreIds.length + dueTodayReminderIds.length + planTaskCount;
   const doneTasks =
     (completion.workout ? 1 : 0) +
     (completion.learning ? 1 : 0) +
     dueTodayChoreIds.filter((id) => completion.chores[id]).length +
-    dueTodayReminderIds.filter((id) => completion.reminders[id]).length;
+    dueTodayReminderIds.filter((id) => completion.reminders[id]).length +
+    planDoneCount;
   return totalTasks === 0 ? 100 : Math.round((doneTasks / totalTasks) * 100);
 }
 

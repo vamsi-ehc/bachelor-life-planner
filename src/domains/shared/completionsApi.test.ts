@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { ChoreConfig, CustomReminder } from './types';
 
 const mockDoc = vi.fn((...args: unknown[]) => ({ path: args.join('/') }));
 const mockGetDoc = vi.fn();
@@ -21,6 +22,16 @@ vi.mock('firebase/firestore', () => ({
 }));
 vi.mock('../../firebase/config', () => ({ db: {} }));
 
+const mockSaveChore = vi.fn().mockResolvedValue(undefined);
+vi.mock('../chores/choresApi', () => ({
+  saveChore: (...args: [string, ChoreConfig]) => mockSaveChore(...args),
+}));
+
+const mockSaveCustomReminder = vi.fn().mockResolvedValue(undefined);
+vi.mock('../reminders/remindersApi', () => ({
+  saveCustomReminder: (...args: [string, CustomReminder]) => mockSaveCustomReminder(...args),
+}));
+
 import {
   getCompletion,
   listRecentCompletions,
@@ -35,6 +46,8 @@ describe('completionsApi', () => {
     mockGetDoc.mockReset();
     mockSetDoc.mockReset();
     mockGetDocs.mockReset();
+    mockSaveChore.mockClear();
+    mockSaveCustomReminder.mockClear();
   });
 
   it('returns an empty completion when no doc exists', async () => {
@@ -57,10 +70,6 @@ describe('completionsApi', () => {
   });
 
   it('fills in defaults for fields missing from a partially-written doc', async () => {
-    // Realistic case: setWorkoutDone's merge:true write only ever sets
-    // {date, workout}, so a doc touched by just one setter has no
-    // `learning`/`chores`/`reminders` fields at all until another setter
-    // writes them.
     mockGetDoc.mockResolvedValue({ exists: () => true, data: () => ({ date: '2026-07-20', workout: true }) });
     const result = await getCompletion('user1', '2026-07-20');
     expect(result).toEqual({ date: '2026-07-20', workout: true, learning: false, chores: {}, reminders: {} });
@@ -84,22 +93,48 @@ describe('completionsApi', () => {
     );
   });
 
-  it('setChoreDone merges a single chore flag', async () => {
-    await setChoreDone('user1', 'c1', true, '2026-07-20');
+  it('setChoreDone merges a single chore flag and awards a streak point when done', async () => {
+    const chore: ChoreConfig = { id: 'c1', name: 'Dishes', cadence: 'daily', points: 2, currentStreak: 1, lastCompletedDate: '2026-07-19' };
+    await setChoreDone('user1', chore, true, '2026-07-20');
     expect(mockSetDoc).toHaveBeenCalledWith(
       expect.anything(),
       { date: '2026-07-20', chores: { c1: true } },
       { merge: true }
     );
+    expect(mockSaveChore).toHaveBeenCalledWith('user1', {
+      ...chore,
+      points: 3,
+      currentStreak: 2,
+      lastCompletedDate: '2026-07-20',
+    });
   });
 
-  it('setReminderDone merges a single reminder flag', async () => {
-    await setReminderDone('user1', 'r1', true, '2026-07-20');
+  it('setChoreDone does not touch streak fields when unchecking', async () => {
+    const chore: ChoreConfig = { id: 'c1', name: 'Dishes', cadence: 'daily', points: 2, currentStreak: 1, lastCompletedDate: '2026-07-20' };
+    await setChoreDone('user1', chore, false, '2026-07-20');
+    expect(mockSaveChore).not.toHaveBeenCalled();
+  });
+
+  it('setChoreDone does not double-award points for an already-completed date', async () => {
+    const chore: ChoreConfig = { id: 'c1', name: 'Dishes', cadence: 'daily', points: 2, currentStreak: 1, lastCompletedDate: '2026-07-20' };
+    await setChoreDone('user1', chore, true, '2026-07-20');
+    expect(mockSaveChore).not.toHaveBeenCalled();
+  });
+
+  it('setReminderDone merges a single reminder flag and awards a streak point when done', async () => {
+    const reminder: CustomReminder = { id: 'r1', label: 'Drink water', time: '10:00', cadence: 'daily' };
+    await setReminderDone('user1', reminder, true, '2026-07-20');
     expect(mockSetDoc).toHaveBeenCalledWith(
       expect.anything(),
       { date: '2026-07-20', reminders: { r1: true } },
       { merge: true }
     );
+    expect(mockSaveCustomReminder).toHaveBeenCalledWith('user1', {
+      ...reminder,
+      points: 1,
+      currentStreak: 1,
+      lastCompletedDate: '2026-07-20',
+    });
   });
 
   it('listRecentCompletions returns completions ordered most-recent-first', async () => {
