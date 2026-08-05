@@ -15,16 +15,16 @@ vi.mock('../firebase/config', () => ({ db: {} }));
 describe('computeStreak', () => {
   it('counts consecutive days (most recent first) where both workout and learning are done', () => {
     const history: DailyCompletion[] = [
-      { date: '2026-07-20', workout: true, learning: true, chores: {} },
-      { date: '2026-07-19', workout: true, learning: true, chores: {} },
-      { date: '2026-07-18', workout: true, learning: false, chores: {} },
+      { date: '2026-07-20', workout: true, learning: true, chores: {}, reminders: {} },
+      { date: '2026-07-19', workout: true, learning: true, chores: {}, reminders: {} },
+      { date: '2026-07-18', workout: true, learning: false, chores: {}, reminders: {} },
     ];
     expect(computeStreak(history)).toBe(2);
   });
 
   it('returns 0 when today is not fully done', () => {
     const history: DailyCompletion[] = [
-      { date: '2026-07-20', workout: false, learning: true, chores: {} },
+      { date: '2026-07-20', workout: false, learning: true, chores: {}, reminders: {} },
     ];
     expect(computeStreak(history)).toBe(0);
   });

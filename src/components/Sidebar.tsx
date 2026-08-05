@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { path: '/meals', label: 'Meals', color: '#B4527E' },
   { path: '/health', label: 'Health', color: '#2E8E88' },
   { path: '/goals', label: 'Goals', color: '#6C5DA0' },
+  { path: '/reminders', label: 'Reminders', color: '#D68A2E' },
 ];
 
 function navLinkClass({ isActive }: { isActive: boolean }) {

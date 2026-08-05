@@ -9,6 +9,7 @@ import { FinancesScreen } from './domains/finances/FinancesScreen';
 import { MealsScreen } from './domains/meals/MealsScreen';
 import { HealthScreen } from './domains/health/HealthScreen';
 import { GoalsScreen } from './domains/goals/GoalsScreen';
+import { RemindersScreen } from './domains/reminders/RemindersScreen';
 import { SettingsScreen } from './domains/settings/SettingsScreen';
 import { InstallPrompt } from './pwa/InstallPrompt';
 import { UpdateToast } from './pwa/UpdateToast';
@@ -65,6 +66,7 @@ function AuthedRoutes({ uid }: { uid: string }) {
           <Route path="/meals" element={<MealsScreen uid={uid} />} />
           <Route path="/health" element={<HealthScreen uid={uid} />} />
           <Route path="/goals" element={<GoalsScreen uid={uid} />} />
+          <Route path="/reminders" element={<RemindersScreen uid={uid} />} />
           <Route path="/settings" element={<SettingsScreen uid={uid} />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
