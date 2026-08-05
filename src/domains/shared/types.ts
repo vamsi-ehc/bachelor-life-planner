@@ -14,12 +14,36 @@ export interface ChoreConfig {
   weeklyDays?: number[];
 }
 
-export interface WorkoutLogEntry {
+export interface WorkoutSet {
+  reps: number;
+  weightKg: number;
+}
+
+export interface WorkoutExercise {
+  id: string;
+  name: string;
+  sets: WorkoutSet[];
+}
+
+export interface WorkoutSession {
+  id: string;
+  date: string;
+  moduleName: string;
+  exercises: WorkoutExercise[];
+}
+
+export interface LegacyWorkoutLogEntry {
   id: string;
   date: string;
   exercise: string;
   detail: string;
   notes?: string;
+}
+
+export type WorkoutLogEntry = WorkoutSession | LegacyWorkoutLogEntry;
+
+export function isLegacyWorkoutEntry(entry: WorkoutLogEntry): entry is LegacyWorkoutLogEntry {
+  return 'exercise' in entry;
 }
 
 export interface LearningLogEntry {
