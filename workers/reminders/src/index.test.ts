@@ -46,7 +46,7 @@ describe('runReminderCheck', () => {
       return null;
     });
 
-    await runReminderCheck(env, new Date('2026-07-23T06:50:00Z'));
+    await runReminderCheck(env, new Date('2026-07-23T06:46:00Z'));
 
     expect(mockSendPush).toHaveBeenCalledTimes(2);
     expect(mockSendPush).toHaveBeenCalledWith(expect.objectContaining({ token: 'tok-a', title: 'Workout time' }));
@@ -59,7 +59,7 @@ describe('runReminderCheck', () => {
     mockListDocuments.mockResolvedValue([]);
     mockGetDocument.mockResolvedValue(null);
 
-    await runReminderCheck(env, new Date('2026-07-23T06:50:00Z'));
+    await runReminderCheck(env, new Date('2026-07-23T06:46:00Z'));
 
     expect(mockSendPush).not.toHaveBeenCalled();
   });
@@ -78,7 +78,7 @@ describe('runReminderCheck', () => {
       return null;
     });
 
-    await runReminderCheck(env, new Date('2026-07-23T06:50:00Z'));
+    await runReminderCheck(env, new Date('2026-07-23T06:46:00Z'));
 
     expect(callCount).toBeGreaterThan(0);
     expect(mockSendPush).toHaveBeenCalledTimes(1);

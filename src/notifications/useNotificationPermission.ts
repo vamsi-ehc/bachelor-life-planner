@@ -4,8 +4,15 @@ import { saveFcmToken } from './fcmTokensApi';
 
 export type NotificationPermissionStatus = 'idle' | 'granted' | 'denied';
 
+function initialStatus(): NotificationPermissionStatus {
+  if (typeof Notification === 'undefined') return 'idle';
+  if (Notification.permission === 'granted') return 'granted';
+  if (Notification.permission === 'denied') return 'denied';
+  return 'idle';
+}
+
 export function useNotificationPermission(uid: string, vapidKey: string) {
-  const [status, setStatus] = useState<NotificationPermissionStatus>('idle');
+  const [status, setStatus] = useState<NotificationPermissionStatus>(initialStatus);
   const [error, setError] = useState<string | null>(null);
 
   async function enable(): Promise<void> {

@@ -3,7 +3,7 @@ import { dayOfWeek } from '../domains/shared/dateUtils';
 
 const CELL = 11;
 const GAP = 2.5;
-const LEVEL_COLORS = ['#DCDFD5', '#B9C0E8', '#6C78D6', '#3947C4'];
+const LEVEL_COLORS = ['#DCDFD5', '#B9C0E8', '#6C78D6', '#7D4DFE'];
 
 function levelFor(value: number): number {
   if (value <= 0) return 0;

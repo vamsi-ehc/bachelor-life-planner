@@ -23,5 +23,6 @@ const messaging = getMessaging(firebaseApp);
 onBackgroundMessage(messaging, (payload) => {
   const title = payload.notification?.title ?? 'Punch In';
   const body = payload.notification?.body ?? '';
-  self.registration.showNotification(title, { body, icon: '/icons/icon-192.png' });
+  const tag = payload.data?.tag;
+  self.registration.showNotification(title, { body, icon: '/icons/icon-192.png', ...(tag ? { tag } : {}) });
 });

@@ -13,12 +13,25 @@ describe('useNotificationPermission', () => {
   beforeEach(() => {
     mockRequestPushToken.mockReset();
     mockSaveFcmToken.mockReset().mockResolvedValue(undefined);
+    vi.stubGlobal('Notification', { permission: 'default' });
   });
 
-  it('starts idle with no error', () => {
+  it('starts idle with no error when permission is not yet decided', () => {
     const { result } = renderHook(() => useNotificationPermission('user1', 'vapid-key'));
     expect(result.current.status).toBe('idle');
     expect(result.current.error).toBeNull();
+  });
+
+  it('starts granted when the browser already granted permission', () => {
+    vi.stubGlobal('Notification', { permission: 'granted' });
+    const { result } = renderHook(() => useNotificationPermission('user1', 'vapid-key'));
+    expect(result.current.status).toBe('granted');
+  });
+
+  it('starts denied when the browser already denied permission', () => {
+    vi.stubGlobal('Notification', { permission: 'denied' });
+    const { result } = renderHook(() => useNotificationPermission('user1', 'vapid-key'));
+    expect(result.current.status).toBe('denied');
   });
 
   it('sets status to granted and saves the token on success', async () => {

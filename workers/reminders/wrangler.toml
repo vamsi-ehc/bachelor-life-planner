@@ -3,7 +3,7 @@ main = "src/index.ts"
 compatibility_date = "2024-11-01"
 
 [triggers]
-crons = ["*/15 * * * *"]
+crons = ["* * * * *"]
 
 [vars]
 FIREBASE_PROJECT_ID = "batch-bf034"

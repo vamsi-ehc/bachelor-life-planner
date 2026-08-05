@@ -13,6 +13,7 @@ import { SettingsScreen } from './domains/settings/SettingsScreen';
 import { InstallPrompt } from './pwa/InstallPrompt';
 import { UpdateToast } from './pwa/UpdateToast';
 import { NotificationPermission } from './notifications/NotificationPermission';
+import { useLocalReminderScheduler } from './notifications/useLocalReminderScheduler';
 import { Sidebar } from './components/Sidebar';
 import { Home } from './marketing/Home';
 import { PrivacyPolicy } from './marketing/PrivacyPolicy';
@@ -30,6 +31,7 @@ function PageviewTracker() {
 
 function AuthedRoutes({ uid }: { uid: string }) {
   const navigate = useNavigate();
+  useLocalReminderScheduler(uid);
   return (
     <div className="lg:flex lg:min-h-screen">
       <Sidebar onSignOut={() => signOutUser()} />

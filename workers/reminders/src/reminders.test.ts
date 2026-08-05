@@ -11,7 +11,7 @@ describe('parseHHMM', () => {
 
 describe('shouldFireDaily', () => {
   it('fires when now is within the window of the configured time and not already sent today', () => {
-    const now = new Date('2026-07-23T06:50:00Z');
+    const now = new Date('2026-07-23T06:46:00Z');
     const result = shouldFireDaily(now, 'UTC', '06:45', null);
     expect(result).toEqual({ fire: true, todayId: '2026-07-23' });
   });
@@ -23,13 +23,13 @@ describe('shouldFireDaily', () => {
   });
 
   it('does not fire twice on the same day even if within the window', () => {
-    const now = new Date('2026-07-23T06:50:00Z');
+    const now = new Date('2026-07-23T06:46:00Z');
     const result = shouldFireDaily(now, 'UTC', '06:45', '2026-07-23');
     expect(result.fire).toBe(false);
   });
 
   it('fires again on a new day', () => {
-    const now = new Date('2026-07-24T06:50:00Z');
+    const now = new Date('2026-07-24T06:46:00Z');
     const result = shouldFireDaily(now, 'UTC', '06:45', '2026-07-23');
     expect(result).toEqual({ fire: true, todayId: '2026-07-24' });
   });
@@ -38,13 +38,13 @@ describe('shouldFireDaily', () => {
 describe('shouldFireWeekly', () => {
   it('fires on the target weekday within the time window', () => {
     // 2026-07-19 is a Sunday
-    const now = new Date('2026-07-19T18:05:00Z');
+    const now = new Date('2026-07-19T18:01:00Z');
     const result = shouldFireWeekly(now, 'UTC', '18:00', 0, null);
     expect(result).toEqual({ fire: true, todayId: '2026-07-19' });
   });
 
   it('does not fire on a non-target weekday', () => {
-    const now = new Date('2026-07-20T18:05:00Z'); // Monday
+    const now = new Date('2026-07-20T18:01:00Z'); // Monday
     const result = shouldFireWeekly(now, 'UTC', '18:00', 0, null);
     expect(result.fire).toBe(false);
   });

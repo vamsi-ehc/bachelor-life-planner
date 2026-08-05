@@ -131,7 +131,14 @@ export async function runReminderCheckForUser(
   for (const job of jobs) {
     for (const tokenDoc of tokens) {
       const token = tokenDoc.data.token as string;
-      const result = await sendPush({ projectId, accessToken, token, title: job.title, body: job.body });
+      const result = await sendPush({
+        projectId,
+        accessToken,
+        token,
+        title: job.title,
+        body: job.body,
+        tag: `${job.key}-${job.todayId}`,
+      });
       if (result.invalidToken) {
         await deleteDocument(projectId, accessToken, `${base}/fcmTokens/${tokenDoc.id}`);
       }

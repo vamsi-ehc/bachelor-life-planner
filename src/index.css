@@ -10,3 +10,11 @@ body {
     repeating-linear-gradient(90deg, #e3e6dc 0 1px, transparent 1px 28px),
     #f4f5f0;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -21,20 +21,20 @@ export function TrendChart({ values }: { values: number[] }) {
     <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} preserveAspectRatio="none" className="w-full h-24 block">
       <defs>
         <linearGradient id="trendArea" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#3947C4" stopOpacity="0.22" />
-          <stop offset="100%" stopColor="#3947C4" stopOpacity="0" />
+          <stop offset="0%" stopColor="#7D4DFE" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="#7D4DFE" stopOpacity="0" />
         </linearGradient>
       </defs>
       <path d={areaD} fill="url(#trendArea)" />
-      <path d={lineD} fill="none" stroke="#3947C4" strokeWidth={2.25} strokeLinecap="round" strokeLinejoin="round" />
+      <path d={lineD} fill="none" stroke="#7D4DFE" strokeWidth={2.25} strokeLinecap="round" strokeLinejoin="round" />
       {points.map(([x, y], i) => (
         <circle
           key={i}
           cx={x}
           cy={y}
           r={i === points.length - 1 ? 3.6 : 2.2}
-          fill={i === points.length - 1 ? '#3947C4' : '#FBFBF8'}
-          stroke="#3947C4"
+          fill={i === points.length - 1 ? '#7D4DFE' : '#FBFBF8'}
+          stroke="#7D4DFE"
           strokeWidth={1.6}
         />
       ))}

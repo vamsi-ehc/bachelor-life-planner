@@ -4,6 +4,7 @@ export interface SendPushParams {
   token: string;
   title: string;
   body: string;
+  tag?: string;
 }
 
 export interface SendPushResult {
@@ -19,6 +20,7 @@ export async function sendPush(params: SendPushParams): Promise<SendPushResult> 
       message: {
         token: params.token,
         notification: { title: params.title, body: params.body },
+        ...(params.tag ? { data: { tag: params.tag } } : {}),
       },
     }),
   });

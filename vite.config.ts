@@ -17,8 +17,8 @@ export default defineConfig({
         short_name: 'Punch In',
         description:
           'A single-user life planner covering workouts, learning, chores, finances, meals, health, and goals.',
-        theme_color: '#2563eb',
-        background_color: '#ffffff',
+        theme_color: '#7D4DFE',
+        background_color: '#F4F5F0',
         display: 'standalone',
         start_url: '/',
         scope: '/',

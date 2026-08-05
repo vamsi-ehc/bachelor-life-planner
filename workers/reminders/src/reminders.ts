@@ -15,7 +15,7 @@ export function shouldFireDaily(
   timeZone: string,
   configuredTime: string,
   lastSentDate: string | null,
-  windowMinutes = 15,
+  windowMinutes = 2,
 ): FireCheck {
   const todayId = zonedDateId(now, timeZone);
   if (lastSentDate === todayId) return { fire: false, todayId };
@@ -29,7 +29,7 @@ export function shouldFireWeekly(
   configuredTime: string,
   targetWeekday: number,
   lastSentDate: string | null,
-  windowMinutes = 15,
+  windowMinutes = 2,
 ): FireCheck {
   const todayId = zonedDateId(now, timeZone);
   if (lastSentDate === todayId) return { fire: false, todayId };
