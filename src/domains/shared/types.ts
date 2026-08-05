@@ -13,6 +13,9 @@ export interface ChoreConfig {
   name: string;
   cadence: 'daily' | 'weekly';
   weeklyDays?: number[];
+  points?: number;
+  currentStreak?: number;
+  lastCompletedDate?: string;
 }
 
 export interface CustomReminder {
@@ -21,6 +24,9 @@ export interface CustomReminder {
   time: string;
   cadence: 'daily' | 'weekly';
   weeklyDays?: number[];
+  points?: number;
+  currentStreak?: number;
+  lastCompletedDate?: string;
 }
 
 export interface WorkoutSet {
@@ -59,6 +65,48 @@ export interface LearningLogEntry {
   id: string;
   date: string;
   note: string;
+}
+
+export interface WorkoutRoutine {
+  id: string;
+  name: string;
+  exercises: { id: string; name: string }[];
+  cadence: 'daily' | 'weekly';
+  weeklyDays?: number[];
+  points?: number;
+  currentStreak?: number;
+  lastCompletedDate?: string;
+}
+
+export interface LearningPlan {
+  id: string;
+  topic: string;
+  cadence: 'daily' | 'weekly';
+  weeklyDays?: number[];
+  points?: number;
+  currentStreak?: number;
+  lastCompletedDate?: string;
+}
+
+export interface HealthPlan {
+  id: string;
+  label: string;
+  cadence: 'daily' | 'weekly';
+  weeklyDays?: number[];
+  points?: number;
+  currentStreak?: number;
+  lastCompletedDate?: string;
+}
+
+export interface MealPlan {
+  id: string;
+  name: string;
+  meal: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  cadence: 'daily' | 'weekly';
+  weeklyDays?: number[];
+  points?: number;
+  currentStreak?: number;
+  lastCompletedDate?: string;
 }
 
 export interface DueItem {
