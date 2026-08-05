@@ -18,7 +18,7 @@ vi.mock('./choresApi', async () => {
 });
 vi.mock('../shared/completionsApi', () => ({
   getCompletion: (...args: [string]) => mockGetCompletion(...args),
-  setChoreDone: (...args: [string, string, boolean]) => mockSetChoreDone(...args),
+  setChoreDone: (...args: [string, unknown, boolean]) => mockSetChoreDone(...args),
 }));
 vi.mock('../../firebase/config', () => ({ db: {} }));
 vi.mock('../../tutorials/useTutorial', () => ({
@@ -54,7 +54,22 @@ describe('ChoresScreen', () => {
     const user = userEvent.setup();
     await user.click(screen.getByRole('checkbox', { name: /Dishes/ }));
 
-    expect(mockSetChoreDone).toHaveBeenCalledWith('user1', 'c1', true);
+    expect(mockSetChoreDone).toHaveBeenCalledWith(
+      'user1',
+      { id: 'c1', name: 'Dishes', cadence: 'daily' },
+      true
+    );
+  });
+
+  it('shows the streak and points badge for a chore', async () => {
+    mockListChores.mockResolvedValue([
+      { id: 'c1', name: 'Dishes', cadence: 'daily', points: 12, currentStreak: 4 },
+    ]);
+    mockGetCompletion.mockResolvedValue({ date: '2026-07-20', workout: false, learning: false, chores: {} });
+
+    renderScreen();
+
+    await waitFor(() => expect(screen.getByText(/4.*12 pts/)).toBeInTheDocument());
   });
 
   it('adds a new daily chore', async () => {
