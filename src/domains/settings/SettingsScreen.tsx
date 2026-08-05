@@ -8,6 +8,7 @@ import { useTutorial } from '../../tutorials/useTutorial';
 import { TutorialStoryboard } from '../../tutorials/TutorialStoryboard';
 import { tutorialContent } from '../../tutorials/tutorialContent';
 import { resetAllTutorialFlags } from '../../tutorials/tutorialFlagsApi';
+import { useNotificationPermission } from '../../notifications/useNotificationPermission';
 
 export function SettingsScreen({ uid }: { uid: string }) {
   const [config, setConfig] = useState<ReminderConfig | null>(null);
@@ -16,6 +17,9 @@ export function SettingsScreen({ uid }: { uid: string }) {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [tutorialsReset, setTutorialsReset] = useState(false);
   const tutorial = useTutorial(uid, 'settings');
+  const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY as string;
+  const { status: notificationStatus, enable: enableNotifications } = useNotificationPermission(uid, vapidKey);
+  const [notifError, setNotifError] = useState<string | null>(null);
 
   useEffect(() => {
     getReminderConfig(uid)
@@ -32,6 +36,25 @@ export function SettingsScreen({ uid }: { uid: string }) {
       setSaved(true);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Failed to save settings');
+    }
+  }
+
+  async function handleNotificationsToggle(nextEnabled: boolean) {
+    if (!config) return;
+    setNotifError(null);
+    if (nextEnabled) {
+      await enableNotifications();
+      if (typeof Notification === 'undefined' || Notification.permission !== 'granted') {
+        setNotifError('Enable notifications in your browser to turn this on.');
+        return;
+      }
+    }
+    const updated = { ...config, notificationsEnabled: nextEnabled };
+    setConfig(updated);
+    try {
+      await saveReminderConfig(uid, updated);
+    } catch (err) {
+      setNotifError(err instanceof Error ? err.message : 'Failed to save notification preference');
     }
   }
 
@@ -125,6 +148,27 @@ export function SettingsScreen({ uid }: { uid: string }) {
           {saveError && <p className="text-sm text-[#B3261E]">{saveError}</p>}
           {saved && <p className="text-sm text-ok">Saved.</p>}
         </form>
+      </section>
+
+      <hr className="border-line" />
+
+      <section className="flex flex-col gap-3 max-w-sm">
+        <p className={sectionLabelClass}>Notifications</p>
+        {notificationStatus === 'denied' ? (
+          <p className="text-sm text-muted">
+            Blocked by your browser. Enable notifications for this site in your browser settings, then reload.
+          </p>
+        ) : (
+          <label className="flex items-center gap-2 text-sm text-muted">
+            <input
+              type="checkbox"
+              checked={config.notificationsEnabled}
+              onChange={(e) => handleNotificationsToggle(e.target.checked)}
+            />
+            Enable reminder notifications
+          </label>
+        )}
+        {notifError && <p className="text-sm text-[#B3261E]">{notifError}</p>}
       </section>
 
       <hr className="border-line" />
