@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseHHMM, shouldFireDaily, shouldFireWeekly } from './reminders';
+import { parseHHMM, shouldFireDaily, shouldFireWeekly, shouldFireCustomReminder } from './reminders';
 
 describe('parseHHMM', () => {
   it('converts HH:MM to minutes since midnight', () => {
@@ -46,6 +46,33 @@ describe('shouldFireWeekly', () => {
   it('does not fire on a non-target weekday', () => {
     const now = new Date('2026-07-20T18:01:00Z'); // Monday
     const result = shouldFireWeekly(now, 'UTC', '18:00', 0, null);
+    expect(result.fire).toBe(false);
+  });
+});
+
+describe('shouldFireCustomReminder', () => {
+  it('fires a daily reminder (no weeklyDays) within the window', () => {
+    const now = new Date('2026-07-23T10:01:00Z');
+    const result = shouldFireCustomReminder(now, 'UTC', '10:00', undefined, null);
+    expect(result).toEqual({ fire: true, todayId: '2026-07-23' });
+  });
+
+  it('fires a weekly reminder only on a matching weekday', () => {
+    // 2026-07-20 is a Monday (weekday 1)
+    const now = new Date('2026-07-20T07:01:00Z');
+    expect(shouldFireCustomReminder(now, 'UTC', '07:00', [1, 3, 5], null).fire).toBe(true);
+    expect(shouldFireCustomReminder(now, 'UTC', '07:00', [2, 4], null).fire).toBe(false);
+  });
+
+  it('does not fire twice on the same day', () => {
+    const now = new Date('2026-07-23T10:01:00Z');
+    const result = shouldFireCustomReminder(now, 'UTC', '10:00', undefined, '2026-07-23');
+    expect(result.fire).toBe(false);
+  });
+
+  it('does not fire outside the time window', () => {
+    const now = new Date('2026-07-23T11:00:00Z');
+    const result = shouldFireCustomReminder(now, 'UTC', '10:00', undefined, null);
     expect(result.fire).toBe(false);
   });
 });

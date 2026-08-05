@@ -2,7 +2,7 @@ import { getAccessToken, ServiceAccountKey } from './googleAuth';
 import { getDocument, listDocuments, patchDocument, deleteDocument } from './firestore';
 import { sendPush } from './fcm';
 import { zonedParts, zonedDateId, zonedWeekday } from './dateUtils';
-import { shouldFireDaily, shouldFireWeekly } from './reminders';
+import { shouldFireDaily, shouldFireWeekly, shouldFireCustomReminder } from './reminders';
 import { isBillDueToday, isChoreDueToday, daysInMonthFor, Bill, ChoreConfig } from './dueChecks';
 
 export interface Env {
@@ -72,6 +72,14 @@ interface PushJob {
   body: string;
 }
 
+interface CustomReminderDoc {
+  id: string;
+  label: string;
+  time: string;
+  cadence: 'daily' | 'weekly';
+  weeklyDays?: number[];
+}
+
 export async function runReminderCheckForUser(
   projectId: string,
   accessToken: string,
@@ -128,6 +136,22 @@ export async function runReminderCheckForUser(
       jobs.push({ key: 'choreDue', todayId: choreCheck.todayId, title: 'Chores due today', body: dueChores.map((c) => c.name).join(', ') });
     } else {
       await patchDocument(projectId, accessToken, `${base}/reminderState/choreDue`, { lastSentDate: choreCheck.todayId });
+    }
+  }
+
+  const customReminders = await listDocuments(projectId, accessToken, `${base}/customReminders`);
+  for (const doc of customReminders) {
+    const reminder = { id: doc.id, ...doc.data } as CustomReminderDoc;
+    const state = await getDocument(projectId, accessToken, `${base}/reminderState/${reminder.id}`);
+    const check = shouldFireCustomReminder(
+      now,
+      config.timezone,
+      reminder.time,
+      reminder.weeklyDays,
+      lastSentDateOf(state),
+    );
+    if (check.fire) {
+      jobs.push({ key: reminder.id, todayId: check.todayId, title: 'Reminder', body: reminder.label });
     }
   }
 

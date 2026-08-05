@@ -37,3 +37,18 @@ export function shouldFireWeekly(
   const diff = Math.abs(zonedMinutesSinceMidnight(now, timeZone) - parseHHMM(configuredTime));
   return { fire: diff < windowMinutes, todayId };
 }
+
+export function shouldFireCustomReminder(
+  now: Date,
+  timeZone: string,
+  time: string,
+  weeklyDays: number[] | undefined,
+  lastSentDate: string | null,
+  windowMinutes = 2,
+): FireCheck {
+  const todayId = zonedDateId(now, timeZone);
+  if (lastSentDate === todayId) return { fire: false, todayId };
+  if (weeklyDays && !weeklyDays.includes(zonedWeekday(now, timeZone))) return { fire: false, todayId };
+  const diff = Math.abs(zonedMinutesSinceMidnight(now, timeZone) - parseHHMM(time));
+  return { fire: diff < windowMinutes, todayId };
+}

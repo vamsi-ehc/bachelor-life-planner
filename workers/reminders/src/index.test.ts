@@ -80,6 +80,56 @@ describe('runReminderCheck', () => {
     expect(mockSendPush).not.toHaveBeenCalled();
   });
 
+  it('fires a due custom reminder and records lastSentDate', async () => {
+    mockListDocuments.mockImplementation(async (_p: string, _t: string, path: string) => {
+      if (path === 'users') return [{ id: 'uid1', data: {} }];
+      if (path === 'users/uid1/fcmTokens') return [{ id: 'tok-a', data: { token: 'tok-a' } }];
+      if (path === 'users/uid1/customReminders') {
+        return [{ id: 'r1', data: { label: 'Drink water', time: '06:45', cadence: 'daily' } }];
+      }
+      return [];
+    });
+    mockGetDocument.mockImplementation(async (_p: string, _t: string, path: string) => {
+      if (path === 'users/uid1/config/reminders') return defaultConfig;
+      return null;
+    });
+
+    await runReminderCheck(env, new Date('2026-07-23T06:46:00Z'));
+
+    expect(mockSendPush).toHaveBeenCalledWith(
+      expect.objectContaining({ token: 'tok-a', title: 'Reminder', body: 'Drink water' })
+    );
+    expect(mockPatchDocument).toHaveBeenCalledWith(
+      'proj1',
+      'access-token',
+      'users/uid1/reminderState/r1',
+      { lastSentDate: '2026-07-23' }
+    );
+  });
+
+  it('does not fire a custom reminder that is not due yet', async () => {
+    mockListDocuments.mockImplementation(async (_p: string, _t: string, path: string) => {
+      if (path === 'users') return [{ id: 'uid1', data: {} }];
+      if (path === 'users/uid1/fcmTokens') return [{ id: 'tok-a', data: { token: 'tok-a' } }];
+      if (path === 'users/uid1/customReminders') {
+        return [{ id: 'r1', data: { label: 'Drink water', time: '20:00', cadence: 'daily' } }];
+      }
+      return [];
+    });
+    mockGetDocument.mockImplementation(async (_p: string, _t: string, path: string) => {
+      if (path === 'users/uid1/config/reminders') return defaultConfig;
+      // Suppress the fixed "workout" reminder (defaultConfig.workoutTime is
+      // '06:45', within the window of `now` below) so it doesn't also fire
+      // and pollute this test's "nothing fired" assertion.
+      if (path === 'users/uid1/reminderState/workout') return { lastSentDate: '2026-07-23' };
+      return null;
+    });
+
+    await runReminderCheck(env, new Date('2026-07-23T06:46:00Z'));
+
+    expect(mockSendPush).not.toHaveBeenCalled();
+  });
+
   it("processes the remaining users when one user's check throws", async () => {
     let callCount = 0;
     mockListDocuments.mockImplementation(async (_p: string, _t: string, path: string) => {
