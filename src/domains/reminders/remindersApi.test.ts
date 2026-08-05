@@ -54,7 +54,9 @@ describe('remindersApi CRUD', () => {
       docs: [{ id: 'r1', data: () => ({ label: 'Drink water', time: '10:00', cadence: 'daily', weeklyDays: null }) }],
     });
     const result = await listCustomReminders('user1');
-    expect(result).toEqual([{ id: 'r1', label: 'Drink water', time: '10:00', cadence: 'daily', weeklyDays: null }]);
+    expect(result).toEqual([
+      { id: 'r1', label: 'Drink water', time: '10:00', cadence: 'daily', weeklyDays: null, points: 0, currentStreak: 0 },
+    ]);
   });
 
   it('saveCustomReminder writes the reminder fields', async () => {
@@ -65,6 +67,9 @@ describe('remindersApi CRUD', () => {
       time: '10:00',
       cadence: 'daily',
       weeklyDays: null,
+      points: 0,
+      currentStreak: 0,
+      lastCompletedDate: null,
     });
   });
 

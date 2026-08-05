@@ -1,7 +1,10 @@
 import { collection, doc, getDoc, getDocs, orderBy, limit, query, setDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
-import { DailyCompletion } from './types';
+import { ChoreConfig, CustomReminder, DailyCompletion } from './types';
 import { todayId } from './dateUtils';
+import { applyCompletion } from './streakLogic';
+import { saveChore } from '../chores/choresApi';
+import { saveCustomReminder } from '../reminders/remindersApi';
 
 export function completionDocRef(uid: string, date: string) {
   return doc(db, 'users', uid, 'completions', date);
@@ -39,18 +42,24 @@ export async function setLearningDone(uid: string, done: boolean, date: string =
 
 export async function setChoreDone(
   uid: string,
-  choreId: string,
+  chore: ChoreConfig,
   done: boolean,
   date: string = todayId()
 ): Promise<void> {
-  await setDoc(completionDocRef(uid, date), { date, chores: { [choreId]: done } }, { merge: true });
+  await setDoc(completionDocRef(uid, date), { date, chores: { [chore.id]: done } }, { merge: true });
+  if (done && chore.lastCompletedDate !== date) {
+    await saveChore(uid, { ...chore, ...applyCompletion(chore, date) });
+  }
 }
 
 export async function setReminderDone(
   uid: string,
-  reminderId: string,
+  reminder: CustomReminder,
   done: boolean,
   date: string = todayId()
 ): Promise<void> {
-  await setDoc(completionDocRef(uid, date), { date, reminders: { [reminderId]: done } }, { merge: true });
+  await setDoc(completionDocRef(uid, date), { date, reminders: { [reminder.id]: done } }, { merge: true });
+  if (done && reminder.lastCompletedDate !== date) {
+    await saveCustomReminder(uid, { ...reminder, ...applyCompletion(reminder, date) });
+  }
 }

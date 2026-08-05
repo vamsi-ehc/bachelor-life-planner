@@ -48,7 +48,9 @@ describe('choresApi CRUD', () => {
       docs: [{ id: 'c1', data: () => ({ name: 'Dishes', cadence: 'daily', weeklyDays: null }) }],
     });
     const result = await listChores('user1');
-    expect(result).toEqual([{ id: 'c1', name: 'Dishes', cadence: 'daily', weeklyDays: null }]);
+    expect(result).toEqual([
+      { id: 'c1', name: 'Dishes', cadence: 'daily', weeklyDays: null, points: 0, currentStreak: 0 },
+    ]);
   });
 
   it('saveChore writes the chore fields', async () => {
@@ -58,6 +60,9 @@ describe('choresApi CRUD', () => {
       name: 'Dishes',
       cadence: 'daily',
       weeklyDays: null,
+      points: 0,
+      currentStreak: 0,
+      lastCompletedDate: null,
     });
   });
 

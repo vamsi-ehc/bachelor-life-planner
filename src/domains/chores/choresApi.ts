@@ -4,7 +4,10 @@ import { ChoreConfig } from '../shared/types';
 
 export async function listChores(uid: string): Promise<ChoreConfig[]> {
   const snap = await getDocs(collection(db, 'users', uid, 'chores'));
-  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<ChoreConfig, 'id'>) }));
+  return snap.docs.map((d) => {
+    const data = d.data() as Omit<ChoreConfig, 'id'>;
+    return { id: d.id, ...data, points: data.points ?? 0, currentStreak: data.currentStreak ?? 0 };
+  });
 }
 
 export async function saveChore(uid: string, chore: ChoreConfig): Promise<void> {
@@ -12,6 +15,9 @@ export async function saveChore(uid: string, chore: ChoreConfig): Promise<void> 
     name: chore.name,
     cadence: chore.cadence,
     weeklyDays: chore.weeklyDays ?? null,
+    points: chore.points ?? 0,
+    currentStreak: chore.currentStreak ?? 0,
+    lastCompletedDate: chore.lastCompletedDate ?? null,
   });
 }
 
