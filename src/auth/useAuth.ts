@@ -1,19 +1,31 @@
 import { useEffect, useState } from 'react';
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, User } from 'firebase/auth';
+import {
+  onAuthStateChanged,
+  signInWithRedirect,
+  getRedirectResult,
+  GoogleAuthProvider,
+  signOut,
+  User,
+} from 'firebase/auth';
 import { auth } from '../firebase/config';
 import { registerUser } from './userRegistry';
 
 export interface AuthState {
   user: User | null;
   loading: boolean;
+  redirectError: string | null;
 }
 
 export function useAuth(): AuthState {
-  const [state, setState] = useState<AuthState>({ user: null, loading: true });
+  const [state, setState] = useState<AuthState>({ user: null, loading: true, redirectError: null });
 
   useEffect(() => {
+    getRedirectResult(auth).catch((err) => {
+      setState((prev) => ({ ...prev, redirectError: err instanceof Error ? err.message : 'Sign-in failed' }));
+    });
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setState({ user, loading: false });
+      setState((prev) => ({ ...prev, user, loading: false }));
       if (user) {
         registerUser(user.uid, user.email).catch((err) => {
           console.error('Failed to register user', err);
@@ -26,8 +38,8 @@ export function useAuth(): AuthState {
   return state;
 }
 
-export async function signInWithGoogle(): Promise<void> {
-  await signInWithPopup(auth, new GoogleAuthProvider());
+export function signInWithGoogle(): Promise<void> {
+  return signInWithRedirect(auth, new GoogleAuthProvider());
 }
 
 export function signOutUser(): Promise<void> {

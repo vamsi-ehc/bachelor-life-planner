@@ -6,7 +6,8 @@ const mockOnAuthStateChanged = vi.fn((_auth: unknown, cb: (user: unknown) => voi
   capturedCallback = cb;
   return vi.fn(); // unsubscribe
 });
-const mockSignInWithPopup = vi.fn().mockResolvedValue({ user: { uid: 'abc123' } });
+const mockSignInWithRedirect = vi.fn().mockResolvedValue(undefined);
+const mockGetRedirectResult = vi.fn().mockResolvedValue(null);
 const mockSignOut = vi.fn();
 const mockRegisterUser = vi.fn().mockResolvedValue(undefined);
 
@@ -16,7 +17,8 @@ const { FakeGoogleAuthProvider } = vi.hoisted(() => ({
 
 vi.mock('firebase/auth', () => ({
   onAuthStateChanged: (...args: [unknown, (user: unknown) => void]) => mockOnAuthStateChanged(...args),
-  signInWithPopup: (...args: unknown[]) => mockSignInWithPopup(...args),
+  signInWithRedirect: (...args: unknown[]) => mockSignInWithRedirect(...args),
+  getRedirectResult: (...args: unknown[]) => mockGetRedirectResult(...args),
   GoogleAuthProvider: FakeGoogleAuthProvider,
   signOut: (...args: unknown[]) => mockSignOut(...args),
 }));
@@ -27,7 +29,8 @@ import { useAuth, signInWithGoogle } from './useAuth';
 
 describe('useAuth', () => {
   beforeEach(() => {
-    mockSignInWithPopup.mockClear();
+    mockGetRedirectResult.mockClear();
+    mockGetRedirectResult.mockResolvedValue(null);
     mockRegisterUser.mockClear();
   });
 
@@ -62,16 +65,18 @@ describe('useAuth', () => {
 
     await waitFor(() => expect(mockRegisterUser).not.toHaveBeenCalled());
   });
+
+  it('surfaces a redirect-result error', async () => {
+    mockGetRedirectResult.mockRejectedValue(new Error('redirect failed'));
+    const { result } = renderHook(() => useAuth());
+
+    await waitFor(() => expect(result.current.redirectError).toBe('redirect failed'));
+  });
 });
 
 describe('signInWithGoogle', () => {
-  it('calls signInWithPopup with a GoogleAuthProvider', async () => {
+  it('calls signInWithRedirect with a GoogleAuthProvider', async () => {
     await signInWithGoogle();
-    expect(mockSignInWithPopup).toHaveBeenCalledWith({}, expect.any(FakeGoogleAuthProvider));
-  });
-
-  it('propagates errors from the popup', async () => {
-    mockSignInWithPopup.mockRejectedValueOnce(new Error('popup blocked'));
-    await expect(signInWithGoogle()).rejects.toThrow('popup blocked');
+    expect(mockSignInWithRedirect).toHaveBeenCalledWith({}, expect.any(FakeGoogleAuthProvider));
   });
 });

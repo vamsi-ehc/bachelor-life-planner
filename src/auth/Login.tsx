@@ -2,8 +2,13 @@
 import { useState } from 'react';
 import { signInWithGoogle } from './useAuth';
 
-export function Login() {
+export interface LoginProps {
+  redirectError?: string | null;
+}
+
+export function Login({ redirectError = null }: LoginProps) {
   const [error, setError] = useState<string | null>(null);
+  const displayedError = error ?? redirectError;
 
   async function handleClick() {
     setError(null);
@@ -43,7 +48,7 @@ export function Login() {
         </span>
         <span className="flex-1 sm:flex-none text-center px-5 py-3">Sign in with Google</span>
       </button>
-      {error && <p className="mt-3 text-sm text-[#B3261E]">{error}</p>}
+      {displayedError && <p className="mt-3 text-sm text-[#B3261E]">{displayedError}</p>}
     </div>
   );
 }

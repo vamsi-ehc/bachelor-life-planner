@@ -78,10 +78,10 @@ function AuthedRoutes({ uid }: { uid: string }) {
   );
 }
 
-function SignedOutRoutes() {
+function SignedOutRoutes({ redirectError }: { redirectError: string | null }) {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<Home redirectError={redirectError} />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="*" element={<Navigate to="/" replace />} />
@@ -90,7 +90,7 @@ function SignedOutRoutes() {
 }
 
 export default function App() {
-  const { user, loading } = useAuth();
+  const { user, loading, redirectError } = useAuth();
 
   if (loading) {
     return <p className="p-6">Loading...</p>;
@@ -100,7 +100,7 @@ export default function App() {
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <PageviewTracker />
       <ConsentBanner />
-      {user ? <AuthedRoutes uid={user.uid} /> : <SignedOutRoutes />}
+      {user ? <AuthedRoutes uid={user.uid} /> : <SignedOutRoutes redirectError={redirectError} />}
     </BrowserRouter>
   );
 }

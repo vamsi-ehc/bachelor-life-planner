@@ -75,7 +75,11 @@ const stagger: Variants = {
   show: { transition: { staggerChildren: 0.08 } },
 };
 
-export function Home() {
+export interface HomeProps {
+  redirectError?: string | null;
+}
+
+export function Home({ redirectError = null }: HomeProps) {
   return (
     <MotionConfig reducedMotion="user">
       <div className="flex flex-col">
@@ -111,7 +115,7 @@ export function Home() {
             </div>
 
             <motion.div className="mt-6 inline-block" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Login />
+              <Login redirectError={redirectError} />
             </motion.div>
           </div>
 
