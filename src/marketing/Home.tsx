@@ -1,6 +1,8 @@
 // src/marketing/Home.tsx
 import { motion, MotionConfig, Variants } from 'motion/react';
 import { Login } from '../auth/Login';
+import { LocalLogin } from '../auth/LocalLogin';
+import { isLocalAuthProvider } from '../auth/authMode';
 import { ActivityRings, RingSegment } from '../components/ActivityRings';
 import { PunchStrip, buildPunchDays } from '../components/PunchStrip';
 import { TrendChart } from '../dashboard/TrendChart';
@@ -59,7 +61,9 @@ const SQUAD = [
 ];
 
 const STEPS = [
-  { title: 'Sign in with Google', body: 'One account, no new password to remember.' },
+  isLocalAuthProvider
+    ? { title: 'Create a local account', body: 'An email and password, stored only on this device.' }
+    : { title: 'Sign in with Google', body: 'One account, no new password to remember.' },
   { title: 'Pick your domains', body: 'Turn on the parts of your day you actually want tracked.' },
   { title: 'Add a squad (optional)', body: 'Punch in solo, or bring a few friends along for the ride.' },
   { title: 'Watch the strip fill in', body: 'Streaks, trend, and rank build up one day at a time.' },
@@ -115,7 +119,11 @@ export function Home({ redirectError = null }: HomeProps) {
             </div>
 
             <motion.div className="mt-6 inline-block" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Login redirectError={redirectError} />
+              {isLocalAuthProvider ? (
+                <LocalLogin redirectError={redirectError} />
+              ) : (
+                <Login redirectError={redirectError} />
+              )}
             </motion.div>
           </div>
 

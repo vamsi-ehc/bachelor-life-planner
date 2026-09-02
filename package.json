@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:offline": "vite --mode offline",
     "build": "tsc && vite build",
+    "build:offline": "tsc && vite build --mode offline",
     "preview": "vite preview",
     "test": "vitest run",
     "generate-icons": "node scripts/generate-icons.js",
@@ -17,7 +19,8 @@
     "motion": "^12.42.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.21.0"
+    "react-router-dom": "^6.21.0",
+    "sql.js": "^1.14.2"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.1.5",
@@ -25,8 +28,10 @@
     "@testing-library/user-event": "^14.5.1",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
+    "@types/sql.js": "^1.4.11",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.16",
+    "fake-indexeddb": "^6.2.5",
     "jsdom": "^23.0.1",
     "postcss": "^8.4.31",
     "sharp": "^0.35.3",
