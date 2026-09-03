@@ -1,9 +1,19 @@
+import { useEffect, useState } from 'react';
 import { usePwaUpdate } from './usePwaUpdate';
 
 export function UpdateToast() {
   const { needRefresh, offlineReady, updateServiceWorker } = usePwaUpdate();
+  const [offlineDismissed, setOfflineDismissed] = useState(false);
 
-  if (!needRefresh && !offlineReady) return null;
+  const showOfflineReady = offlineReady && !needRefresh && !offlineDismissed;
+
+  useEffect(() => {
+    if (!showOfflineReady) return;
+    const timer = setTimeout(() => setOfflineDismissed(true), 5000);
+    return () => clearTimeout(timer);
+  }, [showOfflineReady]);
+
+  if (!needRefresh && !showOfflineReady) return null;
 
   return (
     <div className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:right-4 sm:w-80 bg-gray-900 text-white rounded-lg shadow-lg p-4 flex flex-col gap-2 z-50">

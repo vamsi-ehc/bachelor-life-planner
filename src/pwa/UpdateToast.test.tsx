@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 const mockUpdateServiceWorker = vi.fn();
@@ -32,6 +32,21 @@ describe('UpdateToast', () => {
     mockOfflineReady = true;
     render(<UpdateToast />);
     expect(screen.getByText('Punch In is ready to work offline.')).toBeInTheDocument();
+  });
+
+  it('auto-dismisses the offline-ready message after 5 seconds', () => {
+    vi.useFakeTimers();
+    try {
+      mockOfflineReady = true;
+      const { container } = render(<UpdateToast />);
+      expect(screen.getByText('Punch In is ready to work offline.')).toBeInTheDocument();
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+      expect(container).toBeEmptyDOMElement();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('shows a reload button when an update is available and calls updateServiceWorker(true) on click', async () => {
