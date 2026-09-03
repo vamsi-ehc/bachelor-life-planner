@@ -2,9 +2,9 @@
 // database (see sqliteEngine.ts). It implements just the surface actually
 // used by src/domains/**Api.ts (collection/doc/getDoc/getDocs/addDoc/setDoc/
 // deleteDoc/query/where/orderBy/limit/serverTimestamp), so those files run
-// unmodified against a local SQLite store instead of Firestore. Swapped in
-// for the 'firebase/firestore' import via a mode-based Vite alias — see
-// vite.config.ts — when building the offline (no-internet) version.
+// unmodified against a local SQLite store instead of Firestore. The
+// 'firebase/firestore' specifier is aliased to this module in both
+// vite.config.ts and tsconfig.json, so the app has no backend at all.
 import { getDatabase, schedulePersist } from './sqliteEngine';
 
 export interface LocalFirestoreHandle {

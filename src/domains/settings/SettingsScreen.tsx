@@ -17,8 +17,7 @@ export function SettingsScreen({ uid }: { uid: string }) {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [tutorialsReset, setTutorialsReset] = useState(false);
   const tutorial = useTutorial(uid, 'settings');
-  const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY as string;
-  const { status: notificationStatus, enable: enableNotifications } = useNotificationPermission(uid, vapidKey);
+  const { status: notificationStatus, enable: enableNotifications } = useNotificationPermission(uid);
   const [notifError, setNotifError] = useState<string | null>(null);
 
   useEffect(() => {

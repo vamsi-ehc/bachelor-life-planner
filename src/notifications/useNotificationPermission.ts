@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { requestPushToken } from './firebaseMessaging';
-import { saveFcmToken } from './fcmTokensApi';
 
+// Reminders are delivered on-device by useLocalReminderScheduler using the
+// browser Notification API. All this hook does is ask the user for the
+// notification permission that scheduler needs. There is no push server.
 export type NotificationPermissionStatus = 'idle' | 'granted' | 'denied';
 
 function initialStatus(): NotificationPermissionStatus {
@@ -11,20 +12,19 @@ function initialStatus(): NotificationPermissionStatus {
   return 'idle';
 }
 
-export function useNotificationPermission(uid: string, vapidKey: string) {
+export function useNotificationPermission(_uid: string) {
   const [status, setStatus] = useState<NotificationPermissionStatus>(initialStatus);
   const [error, setError] = useState<string | null>(null);
 
   async function enable(): Promise<void> {
     setError(null);
     try {
-      const token = await requestPushToken(vapidKey);
-      if (!token) {
+      if (typeof Notification === 'undefined') {
         setStatus('denied');
         return;
       }
-      await saveFcmToken(uid, token);
-      setStatus('granted');
+      const permission = await Notification.requestPermission();
+      setStatus(permission === 'granted' ? 'granted' : 'denied');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to enable notifications');
     }

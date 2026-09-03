@@ -1,47 +1,32 @@
-import { useEffect, useState } from 'react';
-import {
-  onAuthStateChanged,
-  signInWithRedirect,
-  getRedirectResult,
-  GoogleAuthProvider,
-  signOut,
-  User,
-} from 'firebase/auth';
-import { auth } from '../firebase/config';
+// Auth is entirely on-device: email/password accounts in a client-side
+// SQLite database (see src/auth/localAuth.ts). No network call is involved.
+import { useEffect } from 'react';
 import { registerUser } from './userRegistry';
+import { useLocalAuthState, signOutLocal } from './localAuth';
+import { isLocalAuthProvider } from './authMode';
+
+export { isLocalAuthProvider };
 
 export interface AuthState {
-  user: User | null;
+  user: { uid: string; email: string | null } | null;
   loading: boolean;
   redirectError: string | null;
 }
 
 export function useAuth(): AuthState {
-  const [state, setState] = useState<AuthState>({ user: null, loading: true, redirectError: null });
+  const { user, loading } = useLocalAuthState();
 
   useEffect(() => {
-    getRedirectResult(auth).catch((err) => {
-      setState((prev) => ({ ...prev, redirectError: err instanceof Error ? err.message : 'Sign-in failed' }));
-    });
+    if (user) {
+      registerUser(user.uid, user.email).catch((err) => {
+        console.error('Failed to register user', err);
+      });
+    }
+  }, [user]);
 
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setState((prev) => ({ ...prev, user, loading: false }));
-      if (user) {
-        registerUser(user.uid, user.email).catch((err) => {
-          console.error('Failed to register user', err);
-        });
-      }
-    });
-    return unsubscribe;
-  }, []);
-
-  return state;
-}
-
-export function signInWithGoogle(): Promise<void> {
-  return signInWithRedirect(auth, new GoogleAuthProvider());
+  return { user, loading, redirectError: null };
 }
 
 export function signOutUser(): Promise<void> {
-  return signOut(auth);
+  return signOutLocal();
 }

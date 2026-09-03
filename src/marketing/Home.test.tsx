@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-vi.mock('../auth/Login', () => ({ Login: () => <div>Login screen</div> }));
+vi.mock('../auth/LocalLogin', () => ({ LocalLogin: () => <div>Login screen</div> }));
 
 import { Home } from './Home';
 
@@ -23,7 +23,6 @@ describe('Home', () => {
     expect(screen.getAllByText(/health/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/goals/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/four minutes to your first punch/i)).toBeInTheDocument();
-    expect(screen.getByText(/sign in with google/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /read.*privacy/i })).toHaveAttribute('href', '/privacy');
     expect(screen.getByRole('link', { name: 'Privacy' })).toHaveAttribute('href', '/privacy');
     expect(screen.getByText('Login screen')).toBeInTheDocument();

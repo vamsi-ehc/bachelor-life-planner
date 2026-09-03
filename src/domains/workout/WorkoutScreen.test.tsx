@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
+import { todayId } from '../shared/dateUtils';
 
 const mockGetCompletion = vi.fn();
 const mockSetWorkoutDone = vi.fn().mockResolvedValue(undefined);
@@ -84,7 +85,7 @@ describe('WorkoutScreen', () => {
     await user.click(screen.getByRole('button', { name: 'Save workout' }));
 
     expect(mockAddSession).toHaveBeenCalledWith('user1', {
-      date: '2026-08-05',
+      date: todayId(),
       moduleName: 'Chest Workout',
       exercises: [
         {

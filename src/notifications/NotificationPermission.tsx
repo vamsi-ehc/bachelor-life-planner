@@ -5,8 +5,8 @@ function dismissedKey(uid: string): string {
   return `notif-banner-dismissed:${uid}`;
 }
 
-export function NotificationPermission({ uid, vapidKey }: { uid: string; vapidKey: string }) {
-  const { status, error, enable } = useNotificationPermission(uid, vapidKey);
+export function NotificationPermission({ uid }: { uid: string }) {
+  const { status, error, enable } = useNotificationPermission(uid);
   const [dismissed, setDismissed] = useState(() => localStorage.getItem(dismissedKey(uid)) === '1');
 
   function dismiss() {

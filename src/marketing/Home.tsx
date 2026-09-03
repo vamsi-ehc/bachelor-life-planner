@@ -1,6 +1,6 @@
 // src/marketing/Home.tsx
 import { motion, MotionConfig, Variants } from 'motion/react';
-import { Login } from '../auth/Login';
+import { LocalLogin } from '../auth/LocalLogin';
 import { ActivityRings, RingSegment } from '../components/ActivityRings';
 import { PunchStrip, buildPunchDays } from '../components/PunchStrip';
 import { TrendChart } from '../dashboard/TrendChart';
@@ -59,7 +59,7 @@ const SQUAD = [
 ];
 
 const STEPS = [
-  { title: 'Sign in with Google', body: 'One account, no new password to remember.' },
+  { title: 'Create a local account', body: 'An email and password, stored only on this device.' },
   { title: 'Pick your domains', body: 'Turn on the parts of your day you actually want tracked.' },
   { title: 'Add a squad (optional)', body: 'Punch in solo, or bring a few friends along for the ride.' },
   { title: 'Watch the strip fill in', body: 'Streaks, trend, and rank build up one day at a time.' },
@@ -115,7 +115,7 @@ export function Home({ redirectError = null }: HomeProps) {
             </div>
 
             <motion.div className="mt-6 inline-block" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Login redirectError={redirectError} />
+              <LocalLogin redirectError={redirectError} />
             </motion.div>
           </div>
 
@@ -332,10 +332,10 @@ export function Home({ redirectError = null }: HomeProps) {
             There isn't a catch. Public means exactly what you choose.
           </h2>
           <p className="mt-4 text-sm sm:text-base text-muted leading-relaxed max-w-2xl">
-            "Public" only ever means the domains you turn on. Your data lives under your own account, and Firestore
-            security rules keep every other account out. Finances and personal health entries never appear on a
-            leaderboard or a friend's feed unless you explicitly choose to share that domain. Sign-in uses Google
-            OAuth, so we never see your password, and we don't sell your data.{' '}
+            "Public" only ever means the domains you turn on. Everything you track is stored on this device only —
+            there is no server, no account in the cloud, and nothing leaves your browser. Finances and personal
+            health entries never appear on a leaderboard or a friend's feed unless you explicitly choose to share
+            that domain.{' '}
             <a href="/privacy" className="text-primary underline">
               Read the full Privacy Policy
             </a>

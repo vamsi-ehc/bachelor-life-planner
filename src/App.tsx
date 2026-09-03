@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth, signOutUser } from './auth/useAuth';
 import { Dashboard } from './dashboard/Dashboard';
 import { WorkoutScreen } from './domains/workout/WorkoutScreen';
@@ -19,16 +18,6 @@ import { Sidebar } from './components/Sidebar';
 import { Home } from './marketing/Home';
 import { PrivacyPolicy } from './marketing/PrivacyPolicy';
 import { TermsOfService } from './marketing/TermsOfService';
-import { ConsentBanner } from './marketing/ConsentBanner';
-import { trackPageview } from './analytics/ga';
-
-function PageviewTracker() {
-  const location = useLocation();
-  useEffect(() => {
-    trackPageview(location.pathname);
-  }, [location.pathname]);
-  return null;
-}
 
 function AuthedRoutes({ uid }: { uid: string }) {
   const navigate = useNavigate();
@@ -55,7 +44,7 @@ function AuthedRoutes({ uid }: { uid: string }) {
         </header>
         <div className="max-w-3xl mx-auto w-full p-3 sm:px-6 flex flex-col gap-2">
           <InstallPrompt />
-          <NotificationPermission uid={uid} vapidKey={import.meta.env.VITE_FIREBASE_VAPID_KEY} />
+          <NotificationPermission uid={uid} />
         </div>
         <Routes>
           <Route path="/" element={<Dashboard uid={uid} onNavigate={navigate} />} />
@@ -98,8 +87,6 @@ export default function App() {
 
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <PageviewTracker />
-      <ConsentBanner />
       {user ? <AuthedRoutes uid={user.uid} /> : <SignedOutRoutes redirectError={redirectError} />}
     </BrowserRouter>
   );

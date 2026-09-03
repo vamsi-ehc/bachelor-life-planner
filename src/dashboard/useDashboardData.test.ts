@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import type { Goal } from '../domains/shared/types';
+import { todayId } from '../domains/shared/dateUtils';
 
 const mockGetCompletion = vi.fn();
 const mockListRecentCompletions = vi.fn();
@@ -258,7 +259,7 @@ describe('useDashboardData', () => {
     );
 
     mockListWorkoutLogEntries.mockResolvedValue([
-      { id: 's1', date: '2026-08-05', moduleName: 'Push Day', exercises: [] },
+      { id: 's1', date: todayId(), moduleName: 'Push Day', exercises: [] },
     ]);
 
     const { result: withLog } = renderHook(() => useDashboardData('user1'));

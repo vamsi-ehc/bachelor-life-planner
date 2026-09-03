@@ -11,8 +11,6 @@ vi.mock('./auth/useAuth', () => ({
 vi.mock('./marketing/Home', () => ({ Home: () => <div>Home screen</div> }));
 vi.mock('./marketing/PrivacyPolicy', () => ({ PrivacyPolicy: () => <div>Privacy screen</div> }));
 vi.mock('./marketing/TermsOfService', () => ({ TermsOfService: () => <div>Terms screen</div> }));
-vi.mock('./marketing/ConsentBanner', () => ({ ConsentBanner: () => null }));
-vi.mock('./analytics/ga', () => ({ trackPageview: vi.fn() }));
 vi.mock('./dashboard/Dashboard', () => ({
   Dashboard: ({ uid }: { uid: string }) => <div>Dashboard for {uid}</div>,
 }));
